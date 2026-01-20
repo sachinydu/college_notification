@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <h1>Latest Updates</h1>
+  <p style="color: var(--text-muted);">Stay informed with the latest college announcements.</p>
+</div>
+
+{% if notices %}
+<div class="grid">
+  {% for notice in notices %}
+  <div class="card" style="display: flex; flex-direction: column; height: 100%;">
+    <div style="margin-bottom: 1rem;">
+      <span
+        style="font-size: 0.75rem; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">
+        {{ notice['category'] }}
+      </span>
+      <h3 style="margin-top: 0.5rem; margin-bottom: 0.5rem;">{{ notice['title'] }}</h3>
+      <div style="font-size: 0.875rem; color: var(--text-muted);">
+        <i class="far fa-clock"></i> {{ notice['created_at'] }}
+      </div>
+    </div>
+
+    <p
+      style="color: var(--text-muted); margin-bottom: 1.5rem; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+      {{ notice['content'] }}
+    </p>
+
+    <a href="{{ url_for('notice_detail', id=notice['id']) }}" class="btn btn-secondary" style="width: 100%;">
+      Read More <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card text-center" style="padding: 4rem;">
+  <i class="fas fa-check-circle" style="font-size: 4rem; color: #10b981; margin-bottom: 1rem;"></i>
+  <h3>All Caught Up!</h3>
+  <p style="color: var(--text-muted);">There are no new notices at this time.</p>
+</div>
+{% endif %}
+{% endblock %}

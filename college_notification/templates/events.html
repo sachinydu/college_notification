@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1>Upcoming Events</h1>
+        <p style="color: var(--text-muted);">Don't miss out on what's happening on campus.</p>
+    </div>
+    {% if session.role == 'admin' %}
+    <a href="{{ url_for('add_event') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Event
+    </a>
+    {% endif %}
+</div>
+
+{% if events %}
+<div class="grid">
+    {% for event in events %}
+    <div class="card" style="position: relative;">
+        {% if session.role == 'admin' %}
+        <div style="position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.5rem; z-index: 10;">
+            <a href="{{ url_for('edit_event', id=event['id']) }}" class="btn btn-secondary"
+                style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                <i class="fas fa-edit"></i>
+            </a>
+            <form action="{{ url_for('delete_event', id=event['id']) }}" method="POST"
+                onsubmit="return confirm('Delete this event?');" style="display: inline;">
+                <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div
+            style="background: var(--primary); height: 120px; border-radius: 0.5rem 0.5rem 0 0; margin: -1.5rem -1.5rem 1rem -1.5rem; display: flex; align-items: center; justify-content: center; color: white;">
+            <i class="fas fa-calendar-alt" style="font-size: 3rem; opacity: 0.8;"></i>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: flex-start;">
+            <div
+                style="text-align: center; background: #f3f4f6; padding: 0.5rem; border-radius: 0.5rem; min-width: 80px;">
+                <span style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--primary);">DATE</span>
+                <span style="display: block; font-size: 1rem; font-weight: 700;">{{ event['date'] }}</span>
+            </div>
+            <div>
+                <h3 style="margin-bottom: 0.25rem;">{{ event['title'] }}</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                    <i class="fas fa-map-marker-alt"></i> {{ event['location'] }}
+                </p>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">{{ event['description'] }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+    <i class="fas fa-calendar-times" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+    <p>No upcoming events scheduled.</p>
+</div>
+{% endif %}
+{% endblock %}

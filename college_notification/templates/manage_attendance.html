@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Attendance - ERP{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage Attendance</h2>
+    
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-6">
+                    <label for="course_id" class="form-label">Select Course</label>
+                    <select class="form-control" id="course_id" name="course_id" onchange="this.form.submit()">
+                        <option value="">-- Choose Course --</option>
+                        {% for course in courses %}
+                        <option value="{{ course['id'] }}" {% if selected_course|int == course['id'] %}selected{% endif %}>
+                            {{ course['course_code'] }} - {{ course['course_name'] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="date" name="date" value="{{ selected_date }}" onchange="this.form.submit()">
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if attendance_records %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Roll No</th>
+                    <th>Student Name</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance_records %}
+                <tr>
+                    <td>{{ record['roll_no'] }}</td>
+                    <td>{{ record['full_name'] }}</td>
+                    <td>
+                        <span class="badge {% if record['status'] == 'Present' %}bg-success{% elif record['status'] == 'Absent' %}bg-danger{% else %}bg-warning{% endif %}">
+                            {{ record['status'] }}
+                        </span>
+                    </td>
+                    <td>{{ record['attendance_date'] }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="updateAttendance({{ record['id'] }}, 'Present')">✓ Present</button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="updateAttendance({{ record['id'] }}, 'Absent')">✗ Absent</button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="updateAttendance({{ record['id'] }}, 'Leave')">🔴 Leave</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% elif selected_course %}
+    <div class="alert alert-info">No students enrolled in this course or no records found.</div>
+    {% else %}
+    <div class="alert alert-warning">Please select a course to view attendance records.</div>
+    {% endif %}
+</div>
+
+<script>
+function updateAttendance(recordId, status) {
+    fetch('{{ url_for("mark_attendance") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            student_id: recordId,
+            course_id: '{{ selected_course }}',
+            date: '{{ selected_date }}',
+            status: status
+        })
+    }).then(r => r.json()).then(data => {
+        if (data.success) {
+            alert('Attendance updated!');
+            location.reload();
+        }
+    });
+}
+</script>
+{% endblock %}

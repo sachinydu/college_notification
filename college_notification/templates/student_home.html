@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="hero-content">
+        <h1>Welcome back, {{ session.user }}!</h1>
+        <p>Stay updated with the latest college happenings and upcoming events.</p>
+    </div>
+</div>
+
+<div class="home-grid">
+    <!-- Latest Notices -->
+    <section>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">Latest Notices</h2>
+            <a href="{{ url_for('notifications') }}"
+                style="color: var(--primary); text-decoration: none; font-weight: 500;">View All</a>
+        </div>
+
+        {% if notices %}
+        <div style="display: grid; gap: 1rem;">
+            {% for notice in notices %}
+            <div class="card notice-card">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <span class="badge">{{ notice['category'] }}</span>
+                    <span style="font-size: 0.875rem; color: var(--text-muted);">{{ notice['created_at'] }}</span>
+                </div>
+                <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">{{ notice['title'] }}</h3>
+                <p
+                    style="color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 1rem;">
+                    {{ notice['content'] }}
+                </p>
+                <a href="{{ url_for('notice_detail', id=notice['id']) }}"
+                    style="color: var(--primary); text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 0.25rem;">
+                    Read More <i class="fas fa-arrow-right" style="font-size: 0.8em;"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card text-center" style="padding: 3rem;">
+            <p style="color: var(--text-muted);">No new notices.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Upcoming Events -->
+    <section>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">Upcoming Events</h2>
+            <a href="{{ url_for('events') }}"
+                style="color: var(--primary); text-decoration: none; font-weight: 500;">View All</a>
+        </div>
+
+        {% if events %}
+        <div style="display: grid; gap: 1rem;">
+            {% for event in events %}
+            <div class="card event-card">
+                <div class="event-date">
+                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--primary);">{{ event['date']
+                        }}</span>
+                </div>
+                <div class="event-details">
+                    <h3 style="margin-bottom: 0.25rem; font-size: 1.1rem;">{{ event['title'] }}</h3>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-map-marker-alt"></i> {{ event['location'] }}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="card text-center" style="padding: 3rem;">
+            <p style="color: var(--text-muted);">No upcoming events.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

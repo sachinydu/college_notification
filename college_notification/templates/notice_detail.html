@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div style="margin-bottom: 1rem;">
+        <a href="javascript:history.back()" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div class="card">
+        <div style="border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <span
+                    style="background: rgba(79, 70, 229, 0.1); color: var(--primary); padding: 0.25rem 0.75rem; border-radius: 99px; font-weight: 600; font-size: 0.875rem;">
+                    {{ notice['category'] }}
+                </span>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">
+                    <i class="far fa-clock"></i> {{ notice['created_at'] }}
+                </span>
+            </div>
+            <h1 style="font-size: 2rem; line-height: 1.2;">{{ notice['title'] }}</h1>
+        </div>
+
+        <div style="font-size: 1.1rem; line-height: 1.8; color: var(--text-main); white-space: pre-wrap;">{{
+            notice['content'] }}</div>
+    </div>
+</div>
+{% endblock %}

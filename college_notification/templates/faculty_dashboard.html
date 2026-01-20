@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Dashboard - ERP{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Faculty Dashboard</h2>
+    <p class="text-muted">Welcome, {{ session['user'] }}!</p>
+    
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Assigned Courses</h5>
+                    <h3 class="text-primary">{{ courses|length }}</h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Students Taught</h5>
+                    <h3 class="text-success">{{ student_count }}</h3>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Actions</h5>
+                    <a href="{{ url_for('manage_attendance') }}" class="btn btn-sm btn-info">Mark Attendance</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <h4 class="mt-5">My Courses</h4>
+    {% if courses %}
+    <div class="list-group">
+        {% for course in courses %}
+        <a href="{{ url_for('manage_grades', course_id=course['id']) }}" class="list-group-item list-group-item-action">
+            <h6 class="mb-1">{{ course['course_code'] }} - {{ course['course_name'] }}</h5>
+            <small>Semester {{ course['semester'] }} | Credits: {{ course['credits'] }}</small>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">No courses assigned yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

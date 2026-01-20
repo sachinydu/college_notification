@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="margin-bottom: 2rem;">Settings</h1>
+
+    <div class="card">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border);">
+            <div>
+                <h4 style="margin-bottom: 0.25rem;">Email Notifications</h4>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Receive emails for new notices</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" checked>
+                <span class="slider round"></span>
+            </label>
+        </div>
+
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border);">
+            <div>
+                <h4 style="margin-bottom: 0.25rem;">Dark Mode</h4>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Toggle dark theme (Coming Soon)</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" disabled>
+                <span class="slider round"></span>
+            </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+            <div>
+                <h4 style="margin-bottom: 0.25rem;">Language</h4>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Select your preferred language</p>
+            </div>
+            <select class="form-control" style="width: auto;">
+                <option>English</option>
+                <option>Hindi</option>
+                <option>Spanish</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Toggle Switch CSS */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 28px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    input:checked+.slider {
+        background-color: var(--primary);
+    }
+
+    input:focus+.slider {
+        box-shadow: 0 0 1px var(--primary);
+    }
+
+    input:checked+.slider:before {
+        -webkit-transform: translateX(22px);
+        -ms-transform: translateX(22px);
+        transform: translateX(22px);
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+        border-radius: 34px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+</style>
+{% endblock %}

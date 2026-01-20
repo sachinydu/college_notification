@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block auth_content %}
+<div class="card text-center">
+    <div style="margin-bottom: 2rem;">
+        <i class="fas fa-user-plus" style="font-size: 3rem; color: var(--secondary);"></i>
+        <h1 style="margin-top: 1rem;">Create Account</h1>
+        <p style="color: var(--text-muted);">Join as a student today</p>
+    </div>
+
+    <form method="POST">
+        <div class="form-group" style="text-align: left;">
+            <label class="form-label">Username</label>
+            <input type="text" name="username" class="form-control" required placeholder="Choose a username">
+        </div>
+
+        <div class="form-group" style="text-align: left;">
+            <label class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" required placeholder="Choose a password">
+        </div>
+
+        <button type="submit" class="btn btn-primary"
+            style="width: 100%; background: var(--secondary); box-shadow: 0 4px 14px 0 rgba(236, 72, 153, 0.39);">
+            Register <i class="fas fa-check"></i>
+        </button>
+    </form>
+
+    <div style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+        <p style="color: var(--text-muted);">Already have an account?</p>
+        <a href="{{ url_for('login') }}" style="color: var(--secondary); text-decoration: none; font-weight: 500;">
+            Sign In Instead
+        </a>
+    </div>
+</div>
+{% endblock %}

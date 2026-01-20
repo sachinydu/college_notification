@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <h1>Admin Dashboard</h1>
+  <p style="color: var(--text-muted);">Overview of system activity and management.</p>
+</div>
+
+<!-- Stats Grid -->
+<div class="grid" style="margin-bottom: 2rem;">
+  <div class="card stats-card">
+    <div class="stats-icon" style="background: rgba(79, 70, 229, 0.1); color: var(--primary);">
+      <i class="fas fa-users"></i>
+    </div>
+    <div>
+      <h3 style="margin: 0;">{{ user_count }}</h3>
+      <p style="color: var(--text-muted); margin: 0;">Total Users</p>
+    </div>
+  </div>
+
+  <div class="card stats-card">
+    <div class="stats-icon" style="background: rgba(236, 72, 153, 0.1); color: var(--secondary);">
+      <i class="fas fa-bullhorn"></i>
+    </div>
+    <div>
+      <h3 style="margin: 0;">{{ notice_count }}</h3>
+      <p style="color: var(--text-muted); margin: 0;">Total Notices</p>
+    </div>
+  </div>
+
+  <div class="card stats-card">
+    <div class="stats-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+      <i class="fas fa-calendar-alt"></i>
+    </div>
+    <div>
+      <h3 style="margin: 0;">{{ event_count }}</h3>
+      <p style="color: var(--text-muted); margin: 0;">Total Events</p>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div style="margin-bottom: 2rem;">
+  <h3 style="margin-bottom: 1rem;">Quick Actions</h3>
+  <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+    <a href="{{ url_for('add_notice') }}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Create Notice
+    </a>
+    <a href="{{ url_for('add_event') }}" class="btn btn-secondary">
+      <i class="fas fa-calendar-plus"></i> Create Event
+    </a>
+    <!-- Placeholder for Manage Users if implemented later -->
+    <!-- <a href="#" class="btn btn-secondary">
+      <i class="fas fa-users-cog"></i> Manage Users
+    </a> -->
+  </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
+  <!-- Recent Notices -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3>Recent Notices</h3>
+      <a href="#" style="font-size: 0.875rem; color: var(--primary); text-decoration: none;">View All</a>
+    </div>
+
+    {% if notices %}
+    <div class="activity-table-wrapper">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for notice in notices %}
+          <tr>
+            <td>{{ notice['title'] }}</td>
+            <td>
+              <span class="badge">{{ notice['category'] }}</span>
+            </td>
+            <td style="font-size: 0.875rem; color: var(--text-muted);">{{ notice['created_at'] }}</td>
+            <td>
+              <div style="display: flex; gap: 0.5rem;">
+                <a href="{{ url_for('edit_notice', id=notice['id']) }}" class="btn-icon" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="{{ url_for('delete_notice', id=notice['id']) }}" method="POST" style="display: inline;"
+                  onsubmit="return confirm('Are you sure?');">
+                  <button type="submit" class="btn-icon danger" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted); text-align: center; padding: 1rem;">No recent notices.</p>
+    {% endif %}
+  </div>
+
+  <!-- Recent Events -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3>Upcoming Events</h3>
+      <a href="{{ url_for('events') }}" style="font-size: 0.875rem; color: var(--primary); text-decoration: none;">View
+        All</a>
+    </div>
+
+    {% if events %}
+    <div class="activity-table-wrapper">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Location</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for event in events %}
+          <tr>
+            <td>{{ event['title'] }}</td>
+            <td style="font-size: 0.875rem; color: var(--text-muted);">{{ event['date'] }}</td>
+            <td style="font-size: 0.875rem; color: var(--text-muted);">{{ event['location'] }}</td>
+            <td>
+              <div style="display: flex; gap: 0.5rem;">
+                <a href="{{ url_for('edit_event', id=event['id']) }}" class="btn-icon" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form action="{{ url_for('delete_event', id=event['id']) }}" method="POST" style="display: inline;"
+                  onsubmit="return confirm('Are you sure?');">
+                  <button type="submit" class="btn-icon danger" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p style="color: var(--text-muted); text-align: center; padding: 1rem;">No upcoming events.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

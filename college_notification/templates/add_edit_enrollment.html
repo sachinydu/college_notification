@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}{% if action == 'Add' %}Add Enrollment{% else %}Edit Enrollment{% endif %} - ERP{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if action == 'Add' %}Add New Enrollment{% else %}Edit Enrollment{% endif %}</h2>
+    
+    <form method="POST" class="mt-4" style="max-width: 500px;">
+        <div class="mb-3">
+            <label for="student_id" class="form-label">Select Student</label>
+            <select class="form-control" id="student_id" name="student_id" required>
+                <option value="">-- Choose Student --</option>
+                {% for student in students %}
+                <option value="{{ student['id'] }}">{{ student['roll_no'] }} - {{ student['full_name'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label for="course_id" class="form-label">Select Course</label>
+            <select class="form-control" id="course_id" name="course_id" required>
+                <option value="">-- Choose Course --</option>
+                {% for course in courses %}
+                <option value="{{ course['id'] }}">{{ course['course_code'] }} - {{ course['course_name'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">{% if action == 'Add' %}Add Enrollment{% else %}Update Enrollment{% endif %}</button>
+        <a href="{{ url_for('manage_enrollments') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

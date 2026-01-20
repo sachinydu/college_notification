@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}{% if action == 'Add' %}Add Course{% else %}Edit Course{% endif %} - ERP{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if action == 'Add' %}Add New Course{% else %}Edit Course{% endif %}</h2>
+    
+    <form method="POST" class="mt-4" style="max-width: 500px;">
+        {% if action == 'Add' %}
+        <div class="mb-3">
+            <label for="course_code" class="form-label">Course Code</label>
+            <input type="text" class="form-control" id="course_code" name="course_code" required>
+        </div>
+        {% endif %}
+        
+        <div class="mb-3">
+            <label for="course_name" class="form-label">Course Name</label>
+            <input type="text" class="form-control" id="course_name" name="course_name"
+                   value="{{ course['course_name'] if action == 'Edit' else '' }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="credits" class="form-label">Credits</label>
+            <input type="number" class="form-control" id="credits" name="credits" min="1" max="6"
+                   value="{{ course['credits'] if action == 'Edit' else '3' }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="semester" class="form-label">Semester</label>
+            <select class="form-control" id="semester" name="semester" required>
+                <option value="1" {% if action == 'Edit' and course['semester'] == 1 %}selected{% endif %}>1</option>
+                <option value="2" {% if action == 'Edit' and course['semester'] == 2 %}selected{% endif %}>2</option>
+                <option value="3" {% if action == 'Edit' and course['semester'] == 3 %}selected{% endif %}>3</option>
+                <option value="4" {% if action == 'Edit' and course['semester'] == 4 %}selected{% endif %}>4</option>
+                <option value="5" {% if action == 'Edit' and course['semester'] == 5 %}selected{% endif %}>5</option>
+                <option value="6" {% if action == 'Edit' and course['semester'] == 6 %}selected{% endif %}>6</option>
+                <option value="7" {% if action == 'Edit' and course['semester'] == 7 %}selected{% endif %}>7</option>
+                <option value="8" {% if action == 'Edit' and course['semester'] == 8 %}selected{% endif %}>8</option>
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label for="faculty_id" class="form-label">Assign Faculty</label>
+            <select class="form-control" id="faculty_id" name="faculty_id">
+                <option value="">-- Unassigned --</option>
+                {% for fac in faculty %}
+                <option value="{{ fac['id'] }}" {% if action == 'Edit' and course['faculty_id'] == fac['id'] %}selected{% endif %}>
+                    {{ fac['username'] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="4">{{ course['description'] if action == 'Edit' else '' }}</textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">{% if action == 'Add' %}Add Course{% else %}Update Course{% endif %}</button>
+        <a href="{{ url_for('manage_courses') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

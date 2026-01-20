@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Notifications</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+  <div class="flash-messages">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert">
+      {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  {% if session.user %}
+  <div class="app-container {% if session.role == 'student' %}layout-student{% endif %}">
+    <!-- Sidebar (Admin Only) -->
+    {% if session.role == 'admin' %}
+    <nav class="sidebar">
+      <div class="nav-brand">
+        <i class="fas fa-graduation-cap"></i> CollegeApp
+      </div>
+
+      <ul class="nav-links">
+        <li>
+          <a href="{{ url_for('home') }}" class="nav-link">
+            <i class="fas fa-home"></i> Dashboard
+          </a>
+        </li>
+        
+        <!-- ERP Management Section -->
+        <li style="margin-top: 1.5rem;">
+          <div style="padding: 0.5rem 1rem; color: #999; font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">ERP Management</div>
+        </li>
+        <li>
+          <a href="{{ url_for('manage_users') }}" class="nav-link">
+            <i class="fas fa-user-tie"></i> Users
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('manage_students') }}" class="nav-link">
+            <i class="fas fa-users"></i> Students
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('manage_courses') }}" class="nav-link">
+            <i class="fas fa-book"></i> Courses
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('manage_enrollments') }}" class="nav-link">
+            <i class="fas fa-clipboard-list"></i> Enrollments
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('manage_attendance') }}" class="nav-link">
+            <i class="fas fa-check-square"></i> Attendance
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('manage_grades') }}" class="nav-link">
+            <i class="fas fa-star"></i> Grades
+          </a>
+        </li>
+        
+        <!-- Notification Section -->
+        <li style="margin-top: 1.5rem;">
+          <div style="padding: 0.5rem 1rem; color: #999; font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Communications</div>
+        </li>
+        <li>
+          <a href="{{ url_for('notifications') }}" class="nav-link">
+            <i class="fas fa-bell"></i> Notifications
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('events') }}" class="nav-link">
+            <i class="fas fa-calendar"></i> Events
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('search') }}" class="nav-link">
+            <i class="fas fa-search"></i> Search
+          </a>
+        </li>
+        
+        <!-- User Section -->
+        <li style="margin-top: 1.5rem;">
+          <a href="{{ url_for('profile') }}" class="nav-link">
+            <i class="fas fa-user"></i> Profile
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('settings') }}" class="nav-link">
+            <i class="fas fa-cog"></i> Settings
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('help') }}" class="nav-link">
+            <i class="fas fa-question-circle"></i> Help
+          </a>
+        </li>
+        <li style="margin-top: auto;">
+          <a href="{{ url_for('logout') }}" class="nav-link" style="color: #ef4444;">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </li>
+      </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+      {% if session.role == 'student' %}
+      <nav class="top-nav">
+        <div class="nav-brand-mobile">
+          <i class="fas fa-graduation-cap"></i> CollegeApp
+        </div>
+        <ul class="top-nav-links">
+          <li><a href="{{ url_for('student_dashboard') }}" class="nav-link">Dashboard</a></li>
+          <li><a href="{{ url_for('student_grades') }}" class="nav-link">Grades</a></li>
+          <li><a href="{{ url_for('student_attendance') }}" class="nav-link">Attendance</a></li>
+          <li><a href="{{ url_for('events') }}" class="nav-link">Events</a></li>
+          <li><a href="{{ url_for('notifications') }}" class="nav-link">Notices</a></li>
+        </ul>
+        <div class="user-menu">
+          <span class="user-name">{{ session.user }}</span>
+          <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger">Logout</a>
+        </div>
+      </nav>
+      {% elif session.role == 'faculty' %}
+      <nav class="top-nav">
+        <div class="nav-brand-mobile">
+          <i class="fas fa-graduation-cap"></i> CollegeApp
+        </div>
+        <ul class="top-nav-links">
+          <li><a href="{{ url_for('faculty_dashboard') }}" class="nav-link">Dashboard</a></li>
+          <li><a href="{{ url_for('manage_grades') }}" class="nav-link">Grades</a></li>
+          <li><a href="{{ url_for('manage_attendance') }}" class="nav-link">Attendance</a></li>
+          <li><a href="{{ url_for('notifications') }}" class="nav-link">Notices</a></li>
+        </ul>
+        <div class="user-menu">
+          <span class="user-name">{{ session.user }}</span>
+          <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger">Logout</a>
+        </div>
+      </nav>
+      {% else %}
+      <!-- Admin Header -->
+      <header class="dashboard-header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button id="menu-toggle" class="btn btn-secondary" style="display: none;">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h2 style="font-weight: 600; margin: 0;">Welcome, {{ session.user }}</h2>
+        </div>
+        <div class="user-badge" style="display: flex; align-items: center; gap: 0.5rem;">
+          <span
+            style="background: var(--primary); color: white; padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.875rem;">
+            {{ session.role|upper }}
+          </span>
+        </div>
+      </header>
+      {% endif %}
+
+      <div class="content-wrapper">
+        {% block content %}{% endblock %}
+      </div>
+
+      <footer class="main-footer">
+        <p>&copy; 2024 College Notification System. All rights reserved.</p>
+      </footer>
+    </main>
+  </div>
+  {% else %}
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      {% block auth_content %}{% endblock %}
+    </div>
+  </div>
+  {% endif %}
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+  <script>
+    // Simple active link highlighter
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+      }
+    });
+
+    // Mobile menu button visibility
+    if (window.innerWidth <= 768) {
+      document.getElementById('menu-toggle').style.display = 'inline-flex';
+    }
+    window.addEventListener('resize', () => {
+      document.getElementById('menu-toggle').style.display = window.innerWidth <= 768 ? 'inline-flex' : 'none';
+    });
+  </script>
+</body>
+
+</html>
