@@ -45,11 +45,14 @@
             <select class="form-control" id="faculty_id" name="faculty_id">
                 <option value="">-- Unassigned --</option>
                 {% for fac in faculty %}
-                <option value="{{ fac['id'] }}" {% if action == 'Edit' and course['faculty_id'] == fac['id'] %}selected{% endif %}>
+                <option value="{{ fac['id'] }}" {% if action == 'Edit' and course['faculty_id'] == fac['id'] %}selected{% endif %}
+                        {% if fac['course_name'] and (action == 'Add' or course['faculty_id'] != fac['id']) %}disabled{% endif %}>
                     {{ fac['username'] }}
+                    {% if fac['course_name'] %} (Teaching: {{ fac['course_name'] }}) - UNAVAILABLE{% endif %}
                 </option>
                 {% endfor %}
             </select>
+            <small class="form-text text-muted">Faculty marked as UNAVAILABLE already teach another subject.</small>
         </div>
         
         <div class="mb-3">

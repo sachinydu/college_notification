@@ -48,7 +48,6 @@
                     <th>Roll No</th>
                     <th>Student Name</th>
                     <th>Status</th>
-                    <th>Date</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -58,15 +57,14 @@
                     <td>{{ record['roll_no'] }}</td>
                     <td>{{ record['full_name'] }}</td>
                     <td>
-                        <span class="badge {% if record['status'] == 'Present' %}bg-success{% elif record['status'] == 'Absent' %}bg-danger{% else %}bg-warning{% endif %}">
+                        <span class="badge {% if record['status'] == 'Present' %}bg-success{% elif record['status'] == 'Absent' %}bg-danger{% elif record['status'] == 'Leave' %}bg-warning{% else %}bg-secondary{% endif %}">
                             {{ record['status'] }}
                         </span>
                     </td>
-                    <td>{{ record['attendance_date'] }}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="updateAttendance({{ record['id'] }}, 'Present')">✓ Present</button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="updateAttendance({{ record['id'] }}, 'Absent')">✗ Absent</button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="updateAttendance({{ record['id'] }}, 'Leave')">🔴 Leave</button>
+                        <button class="btn btn-sm btn-outline-success" onclick="updateAttendance({{ record['student_id'] }}, 'Present')">✓ Present</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="updateAttendance({{ record['student_id'] }}, 'Absent')">✗ Absent</button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="updateAttendance({{ record['student_id'] }}, 'Leave')">🔴 Leave</button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -74,9 +72,9 @@
         </table>
     </div>
     {% elif selected_course %}
-    <div class="alert alert-info">No students enrolled in this course or no records found.</div>
+    <div class="alert alert-info">No students enrolled in this course.</div>
     {% else %}
-    <div class="alert alert-warning">Please select a course to view attendance records.</div>
+    <div class="alert alert-warning">Please select a course to mark attendance.</div>
     {% endif %}
 </div>
 

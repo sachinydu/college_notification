@@ -1,41 +1,189 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div style="margin-bottom: 2rem;">
-    <h1>All Notifications</h1>
-    <p style="color: var(--text-muted);">Archive of all college announcements.</p>
+<div class="notifications-header" style="margin-bottom: 3rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-main);">All Notifications</h1>
+            <p style="color: var(--text-muted); font-size: 1.05rem;">Archive of all college announcements and updates</p>
+        </div>
+        {% if session.get('role') == 'admin' %}
+        <a href="{{ url_for('add_notice') }}" class="btn btn-primary" style="height: fit-content;">
+            <span style="font-size: 1.2rem;">+</span> Add Notification
+        </a>
+        {% endif %}
+    </div>
 </div>
 
-<div class="card">
+<div class="notifications-container">
     {% if notices %}
-    <div style="display: grid; gap: 0;">
+    <div class="notifications-grid">
         {% for notice in notices %}
-        <div
-            style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; gap: 1rem; align-items: flex-start; transition: background 0.2s;">
-            <div
-                style="background: rgba(79, 70, 229, 0.1); color: var(--primary); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                <i class="fas fa-bell"></i>
-            </div>
-            <div style="flex: 1;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <h4 style="margin: 0;">{{ notice['title'] }}</h4>
-                    <span style="font-size: 0.8rem; color: var(--text-muted);">{{ notice['created_at'] }}</span>
+        <div class="notification-card">
+            <div class="notification-header">
+                <div class="notification-icon" style="background: linear-gradient(135deg, var(--primary), var(--secondary));">
+                    <i class="fas fa-bell"></i>
                 </div>
-                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                <div style="flex: 1;">
+                    <h3 style="margin: 0; color: var(--text-main); font-size: 1.25rem; font-weight: 700;">
+                        {{ notice['title'] }}
+                    </h3>
+                    <span class="notification-date">
+                        <i class="fas fa-calendar-alt"></i> {{ notice['created_at'] }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="notification-content">
+                {% if notice['category'] %}
+                <span class="badge" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.1)); color: var(--primary); margin-bottom: 1rem;">
+                    {{ notice['category'] }}
+                </span>
+                {% endif %}
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
                     {{ notice['content'] }}
                 </p>
-                <a href="{{ url_for('notice_detail', id=notice['id']) }}"
-                    style="font-size: 0.875rem; color: var(--primary); text-decoration: none; font-weight: 500;">
-                    View Details
-                </a>
             </div>
+            
+            <a href="{{ url_for('notice_detail', id=notice['id']) }}" class="notification-link">
+                <span>View Full Details</span>
+                <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
+            </a>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
-        <p>No notifications found.</p>
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-inbox"></i>
+        </div>
+        <h3>No Notifications Yet</h3>
+        <p>Stay tuned for important college announcements and updates.</p>
+        {% if session.get('role') == 'admin' %}
+        <a href="{{ url_for('add_notice') }}" class="btn btn-primary">
+            <span style="font-size: 1.1rem;">+</span> Create First Notification
+        </a>
+        {% endif %}
     </div>
     {% endif %}
 </div>
+
+<style>
+    .notifications-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 2rem;
+    }
+    
+    .notification-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .notification-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(99, 102, 241, 0.15);
+        border-color: var(--primary);
+    }
+    
+    .notification-header {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        align-items: flex-start;
+    }
+    
+    .notification-icon {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+    
+    .notification-date {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+        font-weight: 500;
+    }
+    
+    .notification-content {
+        flex: 1;
+        margin-bottom: 1.5rem;
+    }
+    
+    .notification-link {
+        display: inline-flex;
+        align-items: center;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        padding: 0.5rem 0;
+        border-bottom: 2px solid transparent;
+    }
+    
+    .notification-link:hover {
+        border-bottom-color: var(--primary);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05));
+        border-radius: var(--radius);
+        border: 2px dashed var(--border);
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+    
+    .empty-state h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        font-size: 1.05rem;
+    }
+    
+    @media (max-width: 768px) {
+        .notifications-header {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .notifications-header > div {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        
+        .notifications-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 {% endblock %}

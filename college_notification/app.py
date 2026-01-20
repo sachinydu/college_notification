@@ -181,7 +181,7 @@ def add_notice():
         db.execute("INSERT INTO notices (title, content, category) VALUES (?, ?, ?)", (title, content, category))
         db.commit()
         flash("Notice added successfully!")
-        return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('notifications'))
     return render_template('add_edit_notice.html', action='Add')
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -196,7 +196,7 @@ def edit_notice(id):
         db.execute("UPDATE notices SET title=?, content=?, category=? WHERE id=?", (title, content, category, id))
         db.commit()
         flash("Notice updated successfully!")
-        return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('notifications'))
     return render_template('add_edit_notice.html', action='Edit', notice=notice)
 
 @app.route('/delete/<int:id>', methods=['POST'])
@@ -206,7 +206,7 @@ def delete_notice(id):
     db.execute("DELETE FROM notices WHERE id=?", (id,))
     db.commit()
     flash("Notice deleted successfully!")
-    return redirect(url_for('admin_dashboard'))
+    return redirect(url_for('notifications'))
 
 # -------- NEW ROUTES --------
 @app.route('/register', methods=['GET', 'POST'])
@@ -460,6 +460,24 @@ def add_course():
         description = request.form['description']
         
         db = get_db()
+        
+        # Check if faculty already has a course assigned
+        if faculty_id:
+            existing_course = db.execute(
+                "SELECT id FROM courses WHERE faculty_id=?",
+                (faculty_id,)
+            ).fetchone()
+            if existing_course:
+                flash("This faculty already has a subject assigned! Each faculty can teach only one subject.")
+                faculty_list = db.execute("""
+                    SELECT u.id, u.username, c.course_name
+                    FROM users u
+                    LEFT JOIN courses c ON u.id = c.faculty_id
+                    WHERE u.role='faculty'
+                    ORDER BY u.username
+                """).fetchall()
+                return render_template('add_edit_course.html', action='Add', faculty=faculty_list)
+        
         try:
             db.execute("""INSERT INTO courses (course_code, course_name, credits, semester, faculty_id, description)
                          VALUES (?, ?, ?, ?, ?, ?)""",
@@ -471,8 +489,15 @@ def add_course():
             flash("Course code already exists!")
     
     db = get_db()
-    faculty = db.execute("SELECT id, username FROM users WHERE role='faculty'").fetchall()
-    return render_template('add_edit_course.html', action='Add', faculty=faculty)
+    # Get faculty with their assigned courses
+    faculty_list = db.execute("""
+        SELECT u.id, u.username, c.course_name
+        FROM users u
+        LEFT JOIN courses c ON u.id = c.faculty_id
+        WHERE u.role='faculty'
+        ORDER BY u.username
+    """).fetchall()
+    return render_template('add_edit_course.html', action='Add', faculty=faculty_list)
 
 @app.route('/admin/course/<int:id>/edit', methods=['GET', 'POST'])
 @login_required(role='admin')
@@ -484,18 +509,42 @@ def edit_course(id):
         course_name = request.form['course_name']
         credits = request.form['credits']
         semester = request.form['semester']
-        faculty_id = request.form.get('faculty_id') or None
+        new_faculty_id = request.form.get('faculty_id') or None
         description = request.form['description']
+        
+        # Check if faculty is being changed to someone who already has a course
+        if new_faculty_id and new_faculty_id != course['faculty_id']:
+            existing_course = db.execute(
+                "SELECT id FROM courses WHERE faculty_id=? AND id != ?",
+                (new_faculty_id, id)
+            ).fetchone()
+            if existing_course:
+                flash("This faculty already has a subject assigned! Each faculty can teach only one subject.")
+                faculty_list = db.execute("""
+                    SELECT u.id, u.username, c.course_name
+                    FROM users u
+                    LEFT JOIN courses c ON u.id = c.faculty_id
+                    WHERE u.role='faculty'
+                    ORDER BY u.username
+                """).fetchall()
+                return render_template('add_edit_course.html', action='Edit', course=course, faculty=faculty_list)
         
         db.execute("""UPDATE courses SET course_name=?, credits=?, semester=?, faculty_id=?, description=?
                      WHERE id=?""",
-                  (course_name, credits, semester, faculty_id, description, id))
+                  (course_name, credits, semester, new_faculty_id, description, id))
         db.commit()
         flash("Course updated successfully!")
         return redirect(url_for('manage_courses'))
     
-    faculty = db.execute("SELECT id, username FROM users WHERE role='faculty'").fetchall()
-    return render_template('add_edit_course.html', action='Edit', course=course, faculty=faculty)
+    # Get faculty with their assigned courses
+    faculty_list = db.execute("""
+        SELECT u.id, u.username, c.course_name
+        FROM users u
+        LEFT JOIN courses c ON u.id = c.faculty_id
+        WHERE u.role='faculty'
+        ORDER BY u.username
+    """).fetchall()
+    return render_template('add_edit_course.html', action='Edit', course=course, faculty=faculty_list)
 
 @app.route('/admin/course/<int:id>/delete', methods=['POST'])
 @login_required(role='admin')
@@ -581,13 +630,17 @@ def manage_attendance():
                 flash("You can only manage attendance for your own courses!")
                 return redirect(url_for('manage_attendance'))
         
+        # Get all students enrolled in this course with their attendance status
         attendance_records = db.execute("""
-            SELECT a.id, s.roll_no, s.full_name, a.status, a.attendance_date
-            FROM attendance a
-            JOIN students s ON a.student_id = s.id
-            WHERE a.course_id=? AND a.attendance_date=?
+            SELECT s.id as student_id, s.roll_no, s.full_name, 
+                   COALESCE(a.status, 'Not Marked') as status, 
+                   a.id as attendance_id, a.attendance_date
+            FROM students s
+            JOIN enrollments e ON s.id = e.student_id
+            LEFT JOIN attendance a ON s.id = a.student_id AND a.course_id = ? AND a.attendance_date = ?
+            WHERE e.course_id = ?
             ORDER BY s.roll_no
-        """, (course_id, attendance_date)).fetchall()
+        """, (course_id, attendance_date, course_id)).fetchall()
     
     return render_template('manage_attendance.html', courses=courses, attendance_records=attendance_records,
                           selected_course=course_id, selected_date=attendance_date)
@@ -601,15 +654,40 @@ def mark_attendance():
     attendance_date = data.get('date')
     status = data.get('status')
     
+    # Verify faculty can only mark attendance for their own courses
+    if session['role'] == 'faculty':
+        db = get_db()
+        course = db.execute(
+            "SELECT id FROM courses WHERE id=? AND faculty_id=?",
+            (course_id, session.get('user_id'))
+        ).fetchone()
+        if not course:
+            return jsonify({'success': False, 'error': 'Unauthorized'})
+    
     db = get_db()
     try:
-        db.execute("""INSERT INTO attendance (student_id, course_id, attendance_date, status)
-                     VALUES (?, ?, ?, ?)
-                     ON CONFLICT(student_id, course_id, attendance_date) DO UPDATE SET status=?""",
-                  (student_id, course_id, attendance_date, status, status))
+        # Check if record exists
+        existing = db.execute(
+            "SELECT id FROM attendance WHERE student_id=? AND course_id=? AND attendance_date=?",
+            (student_id, course_id, attendance_date)
+        ).fetchone()
+        
+        if existing:
+            db.execute(
+                "UPDATE attendance SET status=? WHERE student_id=? AND course_id=? AND attendance_date=?",
+                (status, student_id, course_id, attendance_date)
+            )
+        else:
+            db.execute(
+                "INSERT INTO attendance (student_id, course_id, attendance_date, status) VALUES (?, ?, ?, ?)",
+                (student_id, course_id, attendance_date, status)
+            )
+        
         db.commit()
+        print(f"[OK] Attendance marked for student {student_id}: {status}")
         return jsonify({'success': True})
     except Exception as e:
+        print(f"[ERROR] Attendance marking failed: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
 # -------- GRADES MANAGEMENT --------
