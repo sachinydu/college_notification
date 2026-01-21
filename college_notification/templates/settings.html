@@ -12,7 +12,7 @@
                 <p style="color: var(--text-muted); font-size: 0.9rem;">Receive emails for new notices</p>
             </div>
             <label class="switch">
-                <input type="checkbox" checked>
+                <input type="checkbox" id="emailNotificationsToggle">
                 <span class="slider round"></span>
             </label>
         </div>
@@ -21,10 +21,10 @@
             style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border);">
             <div>
                 <h4 style="margin-bottom: 0.25rem;">Dark Mode</h4>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Toggle dark theme (Coming Soon)</p>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Toggle dark theme</p>
             </div>
             <label class="switch">
-                <input type="checkbox" disabled>
+                <input type="checkbox" id="settingsDarkModeToggle">
                 <span class="slider round"></span>
             </label>
         </div>
@@ -34,12 +34,115 @@
                 <h4 style="margin-bottom: 0.25rem;">Language</h4>
                 <p style="color: var(--text-muted); font-size: 0.9rem;">Select your preferred language</p>
             </div>
-            <select class="form-control" style="width: auto;">
-                <option>English</option>
-                <option>Hindi</option>
-                <option>Spanish</option>
+            <select class="form-control" id="settingsLangSwitcher" style="width: auto;">
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="es">Spanish</option>
             </select>
         </div>
+        <script>
+                // --- Settings page: Email Notifications, Dark Mode & Language logic (per user, backend-persisted) ---
+                const emailNotificationsToggle = document.getElementById('emailNotificationsToggle');
+                const settingsDarkModeToggle = document.getElementById('settingsDarkModeToggle');
+                const settingsLangSwitcher = document.getElementById('settingsLangSwitcher');
+                // Load all settings from backend
+                fetch('/api/user_settings')
+                    .then(r => r.json())
+                    .then(data => {
+                        emailNotificationsToggle.checked = !!data.email_notifications;
+                        settingsDarkModeToggle.checked = !!data.dark_mode;
+                        setDarkMode(!!data.dark_mode);
+                        settingsLangSwitcher.value = data.language || 'en';
+                        translateUI(data.language || 'en');
+                    })
+                    .catch(() => {});
+                // Email notifications
+                emailNotificationsToggle.addEventListener('change', e => {
+                    fetch('/api/user_settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email_notifications: e.target.checked })
+                    }).catch(() => {});
+                });
+                // Dark mode
+                function setDarkMode(on) {
+                    if (on) document.body.classList.add('dark-mode');
+                    else document.body.classList.remove('dark-mode');
+                    fetch('/api/user_settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ dark_mode: settingsDarkModeToggle.checked })
+                    }).catch(() => {});
+                }
+                settingsDarkModeToggle.addEventListener('change', e => setDarkMode(e.target.checked));
+                // Language
+                settingsLangSwitcher.addEventListener('change', e => {
+                    translateUI(e.target.value);
+                    fetch('/api/user_settings', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ language: e.target.value })
+                    }).catch(() => {});
+                });
+                // Language translation logic
+                const translations = {
+        hi: {
+            'Dashboard': 'डैशबोर्ड', 'Grades': 'अंक', 'Attendance': 'उपस्थिति', 'Events': 'इवेंट्स', 'Notices': 'सूचनाएँ', 'Profile': 'प्रोफ़ाइल', 'Settings': 'सेटिंग्स', 'Help': 'सहायता', 'Logout': 'लॉगआउट', 'Users': 'यूज़र', 'Students': 'छात्र', 'Courses': 'कोर्स', 'Enrollments': 'नामांकन', 'Notifications': 'सूचनाएँ', 'Search': 'खोज', 'Welcome': 'स्वागत', 'Dark Mode': 'डार्क मोड', 'English': 'अंग्रेज़ी', 'Hindi': 'हिन्दी', 'Spanish': 'स्पेनिश', 'Faculty Dashboard': 'फैकल्टी डैशबोर्ड', "Here's your teaching overview.": 'यहाँ आपकी शिक्षण जानकारी है।', 'Assigned Courses': 'आवंटित कोर्स', 'Total Students': 'कुल छात्र', 'Open': 'खोलें', 'Mark Attendance': 'उपस्थिति दर्ज करें', 'Manage Grades': 'अंक प्रबंधन', 'Admin Dashboard': 'प्रशासन डैशबोर्ड', 'Overview of system activity and management.': 'सिस्टम गतिविधि और प्रबंधन का अवलोकन।', 'Total Users': 'कुल यूज़र', 'Total Notices': 'कुल सूचनाएँ', 'Total Events': 'कुल इवेंट्स', 'Quick Actions': 'त्वरित क्रियाएँ', 'Create Notice': 'सूचना बनाएँ', 'Create Event': 'इवेंट बनाएँ', 'Recent Notices': 'हाल की सूचनाएँ', 'View All': 'सभी देखें', 'Title': 'शीर्षक', 'Category': 'श्रेणी', 'Date': 'तारीख', 'Actions': 'क्रियाएँ', 'No recent notices.': 'कोई हाल की सूचना नहीं।', 'Upcoming Events': 'आगामी इवेंट्स', 'Location': 'स्थान', 'No upcoming events.': 'कोई आगामी इवेंट नहीं।', 'Stay updated with the latest college happenings and upcoming events.': 'नवीनतम कॉलेज गतिविधियों और आगामी इवेंट्स से अपडेट रहें।', 'Latest Notices': 'नवीनतम सूचनाएँ', 'No new notices.': 'कोई नई सूचना नहीं।', 'Upcoming Events': 'आगामी इवेंट्स', 'No upcoming events.': 'कोई आगामी इवेंट नहीं।', '© 2024 College Notification System. All rights reserved.': '© 2024 कॉलेज सूचना प्रणाली. सर्वाधिकार सुरक्षित।', 'Success is the sum of small efforts, repeated day in and day out.': 'सफलता छोटे प्रयासों का योग है, जो हर दिन दोहराए जाते हैं।'
+        },
+        es: {
+            'Dashboard': 'Tablero', 'Grades': 'Calificaciones', 'Attendance': 'Asistencia', 'Events': 'Eventos', 'Notices': 'Avisos', 'Profile': 'Perfil', 'Settings': 'Configuración', 'Help': 'Ayuda', 'Logout': 'Cerrar sesión', 'Users': 'Usuarios', 'Students': 'Estudiantes', 'Courses': 'Cursos', 'Enrollments': 'Inscripciones', 'Notifications': 'Notificaciones', 'Search': 'Buscar', 'Welcome': 'Bienvenido', 'Dark Mode': 'Modo Oscuro', 'English': 'Inglés', 'Hindi': 'Hindi', 'Spanish': 'Español', 'Faculty Dashboard': 'Panel de Profesores', "Here's your teaching overview.": 'Aquí está su resumen de enseñanza.', 'Assigned Courses': 'Cursos Asignados', 'Total Students': 'Total de Estudiantes', 'Open': 'Abrir', 'Mark Attendance': 'Marcar Asistencia', 'Manage Grades': 'Gestionar Calificaciones', 'Admin Dashboard': 'Panel de Administración', 'Overview of system activity and management.': 'Resumen de la actividad y gestión del sistema.', 'Total Users': 'Total de Usuarios', 'Total Notices': 'Total de Avisos', 'Total Events': 'Total de Eventos', 'Quick Actions': 'Acciones Rápidas', 'Create Notice': 'Crear Aviso', 'Create Event': 'Crear Evento', 'Recent Notices': 'Avisos Recientes', 'View All': 'Ver Todo', 'Title': 'Título', 'Category': 'Categoría', 'Date': 'Fecha', 'Actions': 'Acciones', 'No recent notices.': 'No hay avisos recientes.', 'Upcoming Events': 'Próximos Eventos', 'Location': 'Ubicación', 'No upcoming events.': 'No hay eventos próximos.', 'Stay updated with the latest college happenings and upcoming events.': 'Manténgase actualizado con los últimos acontecimientos y próximos eventos universitarios.', 'Latest Notices': 'Últimos Avisos', 'No new notices.': 'No hay avisos nuevos.', 'Upcoming Events': 'Próximos Eventos', 'No upcoming events.': 'No hay eventos próximos.', '© 2024 College Notification System. All rights reserved.': '© 2024 Sistema de Notificación Universitaria. Todos los derechos reservados.', 'Success is the sum of small efforts, repeated day in and day out.': 'El éxito es la suma de pequeños esfuerzos, repetidos día tras día.'
+        }
+    };
+    function setDarkMode(on) {
+        if (on) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('darkmode', '1');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('darkmode', '0');
+        }
+    }
+    function translateUI(lang) {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (lang === 'en') el.textContent = key;
+            else if (translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
+        });
+    }
+    if (settingsDarkModeToggle) {
+        // On load
+        if (localStorage.getItem('darkmode') === '1') {
+            settingsDarkModeToggle.checked = true;
+            setDarkMode(true);
+        } else {
+            settingsDarkModeToggle.checked = false;
+            setDarkMode(false);
+        }
+        settingsDarkModeToggle.addEventListener('change', e => setDarkMode(e.target.checked));
+    }
+    if (settingsLangSwitcher) {
+        // On load
+        const savedLang = localStorage.getItem('lang') || 'en';
+        settingsLangSwitcher.value = savedLang;
+        translateUI(savedLang);
+        settingsLangSwitcher.addEventListener('change', e => {
+            localStorage.setItem('lang', e.target.value);
+            translateUI(e.target.value);
+        });
+    }
+    // Also apply on page load for all pages
+    window.addEventListener('DOMContentLoaded', () => {
+        // Dark mode
+        if (localStorage.getItem('darkmode') === '1') {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+        // Language
+        const lang = localStorage.getItem('lang') || 'en';
+        translateUI(lang);
+    });
+    </script>
     </div>
 </div>
 

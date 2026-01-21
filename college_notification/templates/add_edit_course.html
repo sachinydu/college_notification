@@ -39,9 +39,18 @@
                 <option value="8" {% if action == 'Edit' and course['semester'] == 8 %}selected{% endif %}>8</option>
             </select>
         </div>
-        
+
         <div class="mb-3">
-            <label for="faculty_id" class="form-label">Assign Faculty</label>
+            <label for="section" class="form-label">Section</label>
+            <select class="form-control" id="section" name="section" required>
+                <option value="">-- Select Section --</option>
+                <option value="A" {% if action == 'Edit' and course['section'] == 'A' %}selected{% endif %}>Section A</option>
+                <option value="B" {% if action == 'Edit' and course['section'] == 'B' %}selected{% endif %}>Section B</option>
+                <option value="C" {% if action == 'Edit' and course['section'] == 'C' %}selected{% endif %}>Section C</option>
+                <option value="D" {% if action == 'Edit' and course['section'] == 'D' %}selected{% endif %}>Section D</option>
+                <option value="E" {% if action == 'Edit' and course['section'] == 'E' %}selected{% endif %}>Section E</option>
+            </select>
+        </div>
             <select class="form-control" id="faculty_id" name="faculty_id">
                 <option value="">-- Unassigned --</option>
                 {% for fac in faculty %}

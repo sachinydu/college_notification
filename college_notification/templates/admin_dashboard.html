@@ -2,8 +2,8 @@
 
 {% block content %}
 <div style="margin-bottom: 2rem;">
-  <h1>Admin Dashboard</h1>
-  <p style="color: var(--text-muted);">Overview of system activity and management.</p>
+  <h1 data-i18n="Admin Dashboard">Admin Dashboard</h1>
+  <p style="color: var(--text-muted);" data-i18n="Overview of system activity and management.">Overview of system activity and management.</p>
 </div>
 
 <!-- Stats Grid -->
@@ -14,7 +14,7 @@
     </div>
     <div>
       <h3 style="margin: 0;">{{ user_count }}</h3>
-      <p style="color: var(--text-muted); margin: 0;">Total Users</p>
+      <p style="color: var(--text-muted); margin: 0;" data-i18n="Total Users">Total Users</p>
     </div>
   </div>
 
@@ -24,7 +24,7 @@
     </div>
     <div>
       <h3 style="margin: 0;">{{ notice_count }}</h3>
-      <p style="color: var(--text-muted); margin: 0;">Total Notices</p>
+      <p style="color: var(--text-muted); margin: 0;" data-i18n="Total Notices">Total Notices</p>
     </div>
   </div>
 
@@ -34,21 +34,17 @@
     </div>
     <div>
       <h3 style="margin: 0;">{{ event_count }}</h3>
-      <p style="color: var(--text-muted); margin: 0;">Total Events</p>
+      <p style="color: var(--text-muted); margin: 0;" data-i18n="Total Events">Total Events</p>
     </div>
   </div>
 </div>
 
 <!-- Quick Actions -->
 <div style="margin-bottom: 2rem;">
-  <h3 style="margin-bottom: 1rem;">Quick Actions</h3>
+  <h3 style="margin-bottom: 1rem;" data-i18n="Quick Actions">Quick Actions</h3>
   <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-    <a href="{{ url_for('add_notice') }}" class="btn btn-primary">
-      <i class="fas fa-plus"></i> Create Notice
-    </a>
-    <a href="{{ url_for('add_event') }}" class="btn btn-secondary">
-      <i class="fas fa-calendar-plus"></i> Create Event
-    </a>
+    <a href="{{ url_for('add_notice') }}" class="btn btn-primary"><i class="fas fa-plus"></i> <span data-i18n="Create Notice">Create Notice</span></a>
+    <a href="{{ url_for('add_event') }}" class="btn btn-secondary"><i class="fas fa-calendar-plus"></i> <span data-i18n="Create Event">Create Event</span></a>
     <!-- Placeholder for Manage Users if implemented later -->
     <!-- <a href="#" class="btn btn-secondary">
       <i class="fas fa-users-cog"></i> Manage Users
@@ -61,8 +57,8 @@
   <!-- Recent Notices -->
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <h3>Recent Notices</h3>
-      <a href="#" style="font-size: 0.875rem; color: var(--primary); text-decoration: none;">View All</a>
+      <h3 data-i18n="Recent Notices">Recent Notices</h3>
+      <a href="#" style="font-size: 0.875rem; color: var(--primary); text-decoration: none;" data-i18n="View All">View All</a>
     </div>
 
     {% if notices %}
@@ -70,10 +66,10 @@
       <table class="activity-table">
         <thead>
           <tr>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Date</th>
-            <th>Actions</th>
+            <th data-i18n="Title">Title</th>
+            <th data-i18n="Category">Category</th>
+            <th data-i18n="Date">Date</th>
+            <th data-i18n="Actions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -103,16 +99,15 @@
       </table>
     </div>
     {% else %}
-    <p style="color: var(--text-muted); text-align: center; padding: 1rem;">No recent notices.</p>
+    <p style="color: var(--text-muted); text-align: center; padding: 1rem;" data-i18n="No recent notices.">No recent notices.</p>
     {% endif %}
   </div>
 
   <!-- Recent Events -->
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-      <h3>Upcoming Events</h3>
-      <a href="{{ url_for('events') }}" style="font-size: 0.875rem; color: var(--primary); text-decoration: none;">View
-        All</a>
+      <h3 data-i18n="Upcoming Events">Upcoming Events</h3>
+      <a href="{{ url_for('events') }}" style="font-size: 0.875rem; color: var(--primary); text-decoration: none;" data-i18n="View All">View All</a>
     </div>
 
     {% if events %}
@@ -120,10 +115,10 @@
       <table class="activity-table">
         <thead>
           <tr>
-            <th>Title</th>
-            <th>Date</th>
-            <th>Location</th>
-            <th>Actions</th>
+            <th data-i18n="Title">Title</th>
+            <th data-i18n="Date">Date</th>
+            <th data-i18n="Location">Location</th>
+            <th data-i18n="Actions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -151,7 +146,7 @@
       </table>
     </div>
     {% else %}
-    <p style="color: var(--text-muted); text-align: center; padding: 1rem;">No upcoming events.</p>
+    <p style="color: var(--text-muted); text-align: center; padding: 1rem;" data-i18n="No upcoming events.">No upcoming events.</p>
     {% endif %}
   </div>
 </div>

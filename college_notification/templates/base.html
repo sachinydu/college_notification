@@ -13,6 +13,7 @@
 
 <body>
 
+  <!-- Toolbar removed: dark mode and language controls are now only in Settings page -->
   <div class="flash-messages">
     {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -41,20 +42,7 @@
           </a>
         </li>
         
-        <!-- ERP Management Section -->
-        <li style="margin-top: 1.5rem;">
-          <div style="padding: 0.5rem 1rem; color: #999; font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">ERP Management</div>
-        </li>
-        <li>
-          <a href="{{ url_for('manage_users') }}" class="nav-link">
-            <i class="fas fa-user-tie"></i> Users
-          </a>
-        </li>
-        <li>
-          <a href="{{ url_for('manage_students') }}" class="nav-link">
-            <i class="fas fa-users"></i> Students
-          </a>
-        </li>
+    <!-- Toolbar removed: dark mode and language controls are now only in Settings page -->
         <li>
           <a href="{{ url_for('manage_courses') }}" class="nav-link">
             <i class="fas fa-book"></i> Courses
@@ -124,38 +112,48 @@
     <!-- Main Content -->
     <main class="main-content">
       {% if session.role == 'student' %}
-      <nav class="top-nav">
-        <div class="nav-brand-mobile">
+      <aside class="faculty-sidebar student-sidebar student-sidebar-scrollfix">
+        <div class="faculty-sidebar-brand student-sidebar-brand student-sidebar-header">
           <i class="fas fa-graduation-cap"></i> CollegeApp
         </div>
-        <ul class="top-nav-links">
-          <li><a href="{{ url_for('student_dashboard') }}" class="nav-link">Dashboard</a></li>
-          <li><a href="{{ url_for('student_grades') }}" class="nav-link">Grades</a></li>
-          <li><a href="{{ url_for('student_attendance') }}" class="nav-link">Attendance</a></li>
-          <li><a href="{{ url_for('events') }}" class="nav-link">Events</a></li>
-          <li><a href="{{ url_for('notifications') }}" class="nav-link">Notices</a></li>
-        </ul>
-        <div class="user-menu">
-          <span class="user-name">{{ session.user }}</span>
-          <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger">Logout</a>
+        <div class="student-sidebar-menu-container">
+          <ul class="faculty-sidebar-links student-sidebar-links">
+            <li><a href="{{ url_for('student_dashboard') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'student_dashboard' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-home"></i><span class="sidebar-tooltip-text">Dashboard</span></span> Dashboard</a></li>
+            <li><a href="{{ url_for('student_grades') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'student_grades' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-chart-line"></i><span class="sidebar-tooltip-text">Grades</span></span> Grades</a></li>
+            <li><a href="{{ url_for('student_attendance') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'student_attendance' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-calendar-check"></i><span class="sidebar-tooltip-text">Attendance</span></span> Attendance</a></li>
+            <li><a href="{{ url_for('events') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'events' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-calendar-alt"></i><span class="sidebar-tooltip-text">Events</span></span> Events</a></li>
+            <li><a href="{{ url_for('notifications') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'notifications' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-bell"></i><span class="sidebar-tooltip-text">Notices</span></span> Notices</a></li>
+            <li><a href="{{ url_for('profile') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'profile' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-user"></i><span class="sidebar-tooltip-text">Profile</span></span> Profile</a></li>
+            <li><a href="{{ url_for('settings') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'settings' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-cog"></i><span class="sidebar-tooltip-text">Settings</span></span> Settings</a></li>
+            <li><a href="{{ url_for('help') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'help' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-question-circle"></i><span class="sidebar-tooltip-text">Help</span></span> Help</a></li>
+          </ul>
+          <div class="faculty-sidebar-user student-sidebar-user">
+            <span class="user-name">{{ session.user }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger student-logout-btn">Logout</a>
+          </div>
         </div>
-      </nav>
+      </aside>
       {% elif session.role == 'faculty' %}
-      <nav class="top-nav">
-        <div class="nav-brand-mobile">
+      <aside class="faculty-sidebar faculty-sidebar-scrollfix">
+        <div class="faculty-sidebar-brand faculty-sidebar-header">
           <i class="fas fa-graduation-cap"></i> CollegeApp
         </div>
-        <ul class="top-nav-links">
-          <li><a href="{{ url_for('faculty_dashboard') }}" class="nav-link">Dashboard</a></li>
-          <li><a href="{{ url_for('manage_grades') }}" class="nav-link">Grades</a></li>
-          <li><a href="{{ url_for('manage_attendance') }}" class="nav-link">Attendance</a></li>
-          <li><a href="{{ url_for('notifications') }}" class="nav-link">Notices</a></li>
-        </ul>
-        <div class="user-menu">
-          <span class="user-name">{{ session.user }}</span>
-          <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger">Logout</a>
+        <div class="faculty-sidebar-menu-container">
+          <ul class="faculty-sidebar-links">
+            <li><a href="{{ url_for('faculty_dashboard') }}" class="faculty-sidebar-link{% if request.endpoint == 'faculty_dashboard' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-home"></i><span class="sidebar-tooltip-text">Dashboard</span></span> Dashboard</a></li>
+            <li><a href="{{ url_for('manage_grades') }}" class="faculty-sidebar-link{% if request.endpoint == 'manage_grades' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-chart-bar"></i><span class="sidebar-tooltip-text">Grades</span></span> Grades</a></li>
+            <li><a href="{{ url_for('manage_attendance') }}" class="faculty-sidebar-link{% if request.endpoint == 'manage_attendance' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-clipboard-list"></i><span class="sidebar-tooltip-text">Attendance</span></span> Attendance</a></li>
+            <li><a href="{{ url_for('notifications') }}" class="faculty-sidebar-link{% if request.endpoint == 'notifications' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-bell"></i><span class="sidebar-tooltip-text">Notices</span></span> Notices</a></li>
+            <li><a href="{{ url_for('profile') }}" class="faculty-sidebar-link{% if request.endpoint == 'profile' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-user"></i><span class="sidebar-tooltip-text">Profile</span></span> Profile</a></li>
+            <li><a href="{{ url_for('settings') }}" class="faculty-sidebar-link{% if request.endpoint == 'settings' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-cog"></i><span class="sidebar-tooltip-text">Settings</span></span> Settings</a></li>
+            <li><a href="{{ url_for('help') }}" class="faculty-sidebar-link{% if request.endpoint == 'help' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-question-circle"></i><span class="sidebar-tooltip-text">Help</span></span> Help</a></li>
+          </ul>
+          <div class="faculty-sidebar-user">
+            <span class="user-name">{{ session.user }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger">Logout</a>
+          </div>
         </div>
-      </nav>
+      </aside>
       {% else %}
       <!-- Admin Header -->
       <header class="dashboard-header">
@@ -179,7 +177,10 @@
       </div>
 
       <footer class="main-footer">
-        <p>&copy; 2024 College Notification System. All rights reserved.</p>
+        <p data-i18n="© 2024 College Notification System. All rights reserved.">&copy; 2024 College Notification System. All rights reserved.</p>
+        <p style="font-size: 1rem; color: #888; margin-top: 0.5rem;">
+          <i class="fas fa-quote-left"></i> <span data-i18n="Success is the sum of small efforts, repeated day in and day out.">"Success is the sum of small efforts, repeated day in and day out."</span> <i class="fas fa-quote-right"></i>
+        </p>
       </footer>
     </main>
   </div>
@@ -191,6 +192,7 @@
   </div>
   {% endif %}
 
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
   <script src="{{ url_for('static', filename='main.js') }}"></script>
   <script>
     // Simple active link highlighter
@@ -208,6 +210,64 @@
     window.addEventListener('resize', () => {
       document.getElementById('menu-toggle').style.display = window.innerWidth <= 768 ? 'inline-flex' : 'none';
     });
+
+    // DARK MODE FUNCTIONALITY
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    function setDarkMode(on) {
+      if(on) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('darkmode','1');
+      } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('darkmode','0');
+      }
+    }
+    // On load
+    if(localStorage.getItem('darkmode')==='1') {
+      darkModeToggle.checked = true;
+      setDarkMode(true);
+    }
+    darkModeToggle.addEventListener('change',e=>setDarkMode(e.target.checked));
+
+    // LANGUAGE FUNCTIONALITY
+    const langSwitcher = document.getElementById('langSwitcher');
+    const translations = {
+      hi: {
+        'Dashboard':'डैशबोर्ड','Grades':'अंक','Attendance':'उपस्थिति','Events':'इवेंट्स','Notices':'सूचनाएँ','Profile':'प्रोफ़ाइल','Settings':'सेटिंग्स','Help':'सहायता','Logout':'लॉगआउट','Users':'यूज़र','Students':'छात्र','Courses':'कोर्स','Enrollments':'नामांकन','Notifications':'सूचनाएँ','Search':'खोज','Welcome':'स्वागत','Dark Mode':'डार्क मोड','English':'अंग्रेज़ी','Hindi':'हिन्दी','Spanish':'स्पेनिश','Success is the sum of small efforts, repeated day in and day out.':'सफलता छोटे प्रयासों का योग है, जो हर दिन दोहराए जाते हैं।'
+      },
+      es: {
+        'Dashboard':'Tablero','Grades':'Calificaciones','Attendance':'Asistencia','Events':'Eventos','Notices':'Avisos','Profile':'Perfil','Settings':'Configuración','Help':'Ayuda','Logout':'Cerrar sesión','Users':'Usuarios','Students':'Estudiantes','Courses':'Cursos','Enrollments':'Inscripciones','Notifications':'Notificaciones','Search':'Buscar','Welcome':'Bienvenido','Dark Mode':'Modo Oscuro','English':'Inglés','Hindi':'Hindi','Spanish':'Español','Success is the sum of small efforts, repeated day in and day out.':'El éxito es la suma de pequeños esfuerzos, repetidos día tras día.'
+      }
+    };
+    function translateUI(lang) {
+      document.querySelectorAll('[data-i18n]').forEach(el=>{
+        const key = el.getAttribute('data-i18n');
+        if(lang==='en') el.textContent = key;
+        else if(translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
+      });
+      // Also update <option> text for language switcher
+      if(lang==='hi') {
+        langSwitcher.options[0].text = 'अंग्रेज़ी';
+        langSwitcher.options[1].text = 'हिन्दी';
+        langSwitcher.options[2].text = 'स्पेनिश';
+      } else if(lang==='es') {
+        langSwitcher.options[0].text = 'Inglés';
+        langSwitcher.options[1].text = 'Hindi';
+        langSwitcher.options[2].text = 'Español';
+      } else {
+        langSwitcher.options[0].text = 'English';
+        langSwitcher.options[1].text = 'Hindi';
+        langSwitcher.options[2].text = 'Spanish';
+      }
+    }
+    langSwitcher.addEventListener('change',e=>{
+      localStorage.setItem('lang',e.target.value);
+      translateUI(e.target.value);
+    });
+    // On load
+    const savedLang = localStorage.getItem('lang')||'en';
+    langSwitcher.value = savedLang;
+    translateUI(savedLang);
   </script>
 </body>
 

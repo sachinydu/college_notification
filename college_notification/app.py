@@ -1,3 +1,7 @@
+# ...existing code...
+
+# ...existing code...
+# ...existing code...
 from flask import Flask, render_template, request, redirect, url_for, session, flash, g, jsonify
 import sqlite3
 import os
@@ -10,6 +14,22 @@ DB = os.path.join(os.path.dirname(__file__), 'college.db')
 # Flask app setup
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = 'your_secret_key_here'
+
+# ----------------------------------------
+# Grade Calculation Function
+# ----------------------------------------
+def calculate_grade(percentage):
+    """Calculate grade based on percentage"""
+    if percentage >= 90:
+        return 'A'
+    elif percentage >= 80:
+        return 'B'
+    elif percentage >= 70:
+        return 'C'
+    elif percentage >= 60:
+        return 'D'
+    else:
+        return 'F'
 
 # ----------------------------------------
 # Database connection functions
@@ -456,6 +476,7 @@ def add_course():
         course_name = request.form['course_name']
         credits = request.form['credits']
         semester = request.form['semester']
+        section = request.form['section']
         faculty_id = request.form.get('faculty_id') or None
         description = request.form['description']
         
@@ -479,9 +500,9 @@ def add_course():
                 return render_template('add_edit_course.html', action='Add', faculty=faculty_list)
         
         try:
-            db.execute("""INSERT INTO courses (course_code, course_name, credits, semester, faculty_id, description)
-                         VALUES (?, ?, ?, ?, ?, ?)""",
-                      (course_code, course_name, credits, semester, faculty_id, description))
+            db.execute("""INSERT INTO courses (course_code, course_name, credits, semester, section, faculty_id, description)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                      (course_code, course_name, credits, semester, section, faculty_id, description))
             db.commit()
             flash("Course added successfully!")
             return redirect(url_for('manage_courses'))
@@ -509,6 +530,7 @@ def edit_course(id):
         course_name = request.form['course_name']
         credits = request.form['credits']
         semester = request.form['semester']
+        section = request.form['section']
         new_faculty_id = request.form.get('faculty_id') or None
         description = request.form['description']
         
@@ -529,9 +551,9 @@ def edit_course(id):
                 """).fetchall()
                 return render_template('add_edit_course.html', action='Edit', course=course, faculty=faculty_list)
         
-        db.execute("""UPDATE courses SET course_name=?, credits=?, semester=?, faculty_id=?, description=?
+        db.execute("""UPDATE courses SET course_name=?, credits=?, semester=?, section=?, faculty_id=?, description=?
                      WHERE id=?""",
-                  (course_name, credits, semester, new_faculty_id, description, id))
+                  (course_name, credits, semester, section, new_faculty_id, description, id))
         db.commit()
         flash("Course updated successfully!")
         return redirect(url_for('manage_courses'))
@@ -696,11 +718,31 @@ def mark_attendance():
 def manage_grades():
     db = get_db()
     course_id = request.args.get('course_id')
+    user_id = db.execute("SELECT id FROM users WHERE username=?", (session['user'],)).fetchone()[0]
     
-    courses = db.execute("SELECT id, course_code, course_name FROM courses ORDER BY course_code").fetchall()
+    # If faculty, show only their courses
+    if session['role'] == 'faculty':
+        courses = db.execute(
+            "SELECT id, course_code, course_name FROM courses WHERE faculty_id=? ORDER BY course_code",
+            (user_id,)
+        ).fetchall()
+    else:
+        # Admin sees all courses
+        courses = db.execute("SELECT id, course_code, course_name FROM courses ORDER BY course_code").fetchall()
+    
     grades = []
     
     if course_id:
+        # Verify faculty can only access their own courses
+        if session['role'] == 'faculty':
+            course = db.execute(
+                "SELECT id FROM courses WHERE id=? AND faculty_id=?",
+                (course_id, user_id)
+            ).fetchone()
+            if not course:
+                flash("You can only manage grades for your own courses!")
+                return redirect(url_for('manage_grades'))
+        
         grades = db.execute("""
             SELECT g.id, s.roll_no, s.full_name, g.marks_obtained, g.total_marks, g.grade
             FROM grades g
@@ -782,7 +824,186 @@ def edit_grade(id):
     
     return render_template('add_edit_grade.html', action='Edit', grade=grade)
 
-# -------- STUDENT PORTAL --------
+# -------- SESSIONAL MARKS --------
+@app.route('/faculty/sessional-marks')
+@login_required(role='faculty')
+def sessional_marks():
+    db = get_db()
+    user_id = db.execute("SELECT id FROM users WHERE username=?", (session['user'],)).fetchone()[0]
+    course_id = request.args.get('course_id')
+    
+    # Get faculty's courses
+    courses = db.execute(
+        "SELECT id, course_code, course_name, section FROM courses WHERE faculty_id=? ORDER BY course_code",
+        (user_id,)
+    ).fetchall()
+    
+    marks_data = []
+    section = None
+    
+    if course_id:
+        # Verify course belongs to faculty
+        course = db.execute(
+            "SELECT section FROM courses WHERE id=? AND faculty_id=?",
+            (course_id, user_id)
+        ).fetchone()
+        if course:
+            section = course['section']
+            marks_data = db.execute("""
+                SELECT sm.id, s.roll_no, s.full_name, sm.quiz_marks, sm.assignment_marks, 
+                       sm.presentation_marks, sm.total_sessional
+                FROM sessional_marks sm
+                JOIN students s ON sm.student_id = s.id
+                WHERE sm.course_id=?
+                ORDER BY s.roll_no
+            """, (course_id,)).fetchall()
+    
+    return render_template('faculty_sessional_marks.html', courses=courses, marks_data=marks_data, 
+                          selected_course=course_id, section=section)
+
+@app.route('/faculty/sessional-marks/add', methods=['GET', 'POST'])
+@login_required(role='faculty')
+def add_sessional_marks():
+    if request.method == 'POST':
+        student_id = request.form['student_id']
+        course_id = request.form['course_id']
+        quiz_marks = float(request.form.get('quiz_marks', 0))
+        assignment_marks = float(request.form.get('assignment_marks', 0))
+        presentation_marks = float(request.form.get('presentation_marks', 0))
+        total_sessional = quiz_marks + assignment_marks + presentation_marks
+        
+        db = get_db()
+        user_id = db.execute("SELECT id FROM users WHERE username=?", (session['user'],)).fetchone()[0]
+        
+        # Verify faculty owns this course
+        course = db.execute(
+            "SELECT section FROM courses WHERE id=? AND faculty_id=?",
+            (course_id, user_id)
+        ).fetchone()
+        if not course:
+            flash("Unauthorized!")
+            return redirect(url_for('sessional_marks'))
+        
+        try:
+            db.execute("""INSERT INTO sessional_marks (student_id, course_id, section, quiz_marks, 
+                         assignment_marks, presentation_marks, total_sessional)
+                         VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                      (student_id, course_id, course['section'], quiz_marks, assignment_marks, 
+                       presentation_marks, total_sessional))
+            db.commit()
+            flash("Sessional marks added successfully!")
+        except sqlite3.IntegrityError:
+            flash("Marks already exist for this student!")
+        
+        return redirect(url_for('sessional_marks', course_id=course_id))
+    
+    db = get_db()
+    user_id = db.execute("SELECT id FROM users WHERE username=?", (session['user'],)).fetchone()[0]
+    courses = db.execute(
+        "SELECT id, course_code, course_name FROM courses WHERE faculty_id=?",
+        (user_id,)
+    ).fetchall()
+    
+    return render_template('add_sessional_marks.html', courses=courses)
+
+# -------- PRE-TEST MARKS --------
+@app.route('/faculty/pre-test-marks')
+@login_required(role='faculty')
+def pre_test_marks():
+    db = get_db()
+    user_id = db.execute("SELECT id FROM users WHERE username=?", (session['user'],)).fetchone()[0]
+    course_id = request.args.get('course_id')
+    
+    # Get faculty's courses
+    courses = db.execute(
+        "SELECT id, course_code, course_name, section FROM courses WHERE faculty_id=? ORDER BY course_code",
+        (user_id,)
+    ).fetchall()
+    
+    marks_data = []
+    section = None
+    
+    if course_id:
+        # Verify course belongs to faculty
+        course = db.execute(
+            "SELECT section FROM courses WHERE id=? AND faculty_id=?",
+            (course_id, user_id)
+        ).fetchone()
+        if course:
+            section = course['section']
+            marks_data = db.execute("""
+                SELECT ptm.id, s.roll_no, s.full_name, ptm.pre_test_marks, ptm.total_pre_test, ptm.remarks
+                FROM pre_test_marks ptm
+                JOIN students s ON ptm.student_id = s.id
+                WHERE ptm.course_id=?
+                ORDER BY s.roll_no
+            """, (course_id,)).fetchall()
+    
+    return render_template('faculty_pre_test_marks.html', courses=courses, marks_data=marks_data,
+                          selected_course=course_id, section=section)
+
+@app.route('/faculty/pre-test-marks/add', methods=['GET', 'POST'])
+@login_required(role='faculty')
+def add_pre_test_marks():
+    if request.method == 'POST':
+        student_id = request.form['student_id']
+        course_id = request.form['course_id']
+        pre_test_marks = float(request.form.get('pre_test_marks', 0))
+        total_pre_test = float(request.form.get('total_pre_test', 10))
+        remarks = request.form.get('remarks', '')
+        
+        db = get_db()
+        user_id = db.execute("SELECT id FROM users WHERE username=?", (session['user'],)).fetchone()[0]
+        
+        # Verify faculty owns this course
+        course = db.execute(
+            "SELECT section FROM courses WHERE id=? AND faculty_id=?",
+            (course_id, user_id)
+        ).fetchone()
+        if not course:
+            flash("Unauthorized!")
+            return redirect(url_for('pre_test_marks'))
+        
+        try:
+            db.execute("""INSERT INTO pre_test_marks (student_id, course_id, section, pre_test_marks, 
+                         total_pre_test, remarks)
+                         VALUES (?, ?, ?, ?, ?, ?)""",
+                      (student_id, course_id, course['section'], pre_test_marks, total_pre_test, remarks))
+            db.commit()
+            flash("Pre-test marks added successfully!")
+        except sqlite3.IntegrityError:
+            flash("Pre-test marks already exist for this student!")
+        
+        return redirect(url_for('pre_test_marks', course_id=course_id))
+    
+    db = get_db()
+    user_id = db.execute("SELECT id FROM users WHERE username=?", (session['user'],)).fetchone()[0]
+    courses = db.execute(
+        "SELECT id, course_code, course_name FROM courses WHERE faculty_id=?",
+        (user_id,)
+    ).fetchall()
+    
+    return render_template('add_pre_test_marks.html', courses=courses)
+
+# Exam Management (Faculty) - Beginner-friendly placeholder routes
+@app.route('/faculty/exams/add', methods=['GET', 'POST'])
+@login_required(role='faculty')
+def add_exam():
+    """Show form to add a new exam (placeholder)."""
+    return '<h2>Add Exam (Coming Soon)</h2>'
+
+@app.route('/faculty/exams/<int:exam_id>/marks')
+@login_required(role='faculty')
+def exam_marks(exam_id):
+    """Show marks for a specific exam (placeholder)."""
+    return f'<h2>Exam Marks (Coming Soon) for Exam ID: {exam_id}</h2>'
+
+@app.route('/faculty/exams/<int:exam_id>/marks/add', methods=['GET', 'POST'])
+@login_required(role='faculty')
+def add_exam_marks(exam_id):
+    """Show form to add marks for a specific exam (placeholder)."""
+    return f'<h2>Add Exam Marks (Coming Soon) for Exam ID: {exam_id}</h2>'
+
 @app.route('/student/dashboard')
 @login_required(role='student')
 def student_dashboard():
@@ -890,36 +1111,28 @@ def notifications():
     notices = db.execute("SELECT * FROM notices ORDER BY created_at DESC").fetchall()
     return render_template('notifications.html', notices=notices)
 
+# Placeholder route for manage_exams to fix BuildError
+@app.route('/faculty/exams', methods=['GET'])
+@login_required(role='faculty')
+def manage_exams():
+    return '<h2>Faculty Exams Placeholder Page</h2><p>This page will be implemented soon.</p>'
+
 # ----------------------------------------
 # Run Flask app
 # ----------------------------------------
 if __name__ == '__main__':
-    with app.app_context():
-        # Delete old database to start fresh
-        if os.path.exists(DB):
-            print(f"[*] Deleting old database: {DB}")
-            os.remove(DB)
-        
-        # Create fresh database
+    # Only initialize database if it does not exist
+    if not os.path.exists(DB):
         print("[*] Initializing database...")
         init_db()
-        
-        # Verify tables exist
-        db = get_db()
-        tables = db.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).fetchall()
-        
-        if tables:
-            print(f"[OK] Tables created: {[t[0] for t in tables]}")
-        else:
-            print("[ERROR] No tables found!")
-    
+        with app.app_context():
+            db = get_db()
+            tables = db.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+            if tables:
+                print(f"[OK] Tables created: {[t[0] for t in tables]}")
+            else:
+                print("[ERROR] No tables found!")
     print("[*] Starting Flask app...")
     app.run(debug=True)
 
-# Default credentials for testing
-# Admin:    username: admin    password: admin123
-# Faculty:  username: faculty1 password: faculty123
-# Student:  username: student1 password: student123
 

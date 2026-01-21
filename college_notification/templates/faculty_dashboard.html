@@ -1,53 +1,103 @@
+
 {% extends "base.html" %}
 
 {% block title %}Faculty Dashboard - ERP{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Faculty Dashboard</h2>
-    <p class="text-muted">Welcome, {{ session['user'] }}!</p>
-    
-    <div class="row mt-4">
-        <div class="col-md-4 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Assigned Courses</h5>
-                    <h3 class="text-primary">{{ courses|length }}</h3>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Total Students Taught</h5>
-                    <h3 class="text-success">{{ student_count }}</h3>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title">Quick Actions</h5>
-                    <a href="{{ url_for('manage_attendance') }}" class="btn btn-sm btn-info">Mark Attendance</a>
-                </div>
-            </div>
-        </div>
+<div class="faculty-dashboard">
+  <div class="dashboard-header mb-4">
+    <h1 class="faculty-title"><span data-i18n="Faculty Dashboard">👨‍🏫 Faculty Dashboard</span></h1>
+    <p class="faculty-welcome"><span data-i18n="Welcome">Welcome back</span>, <span class="faculty-username">{{ session['user'] }}</span>! <span data-i18n="Here's your teaching overview.">Here's your teaching overview.</span></p>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="faculty-stats-grid mb-4">
+    <div class="faculty-stats-card faculty-stats-centered">
+      <div class="faculty-stats-icon bg-primary"><i class="fas fa-book"></i></div>
+      <div class="faculty-stats-content">
+        <div class="faculty-stats-value">{{ courses|length }}</div>
+        <div class="faculty-stats-label" data-i18n="Assigned Courses">Assigned Courses</div>
+      </div>
     </div>
-    
-    <h4 class="mt-5">My Courses</h4>
+    <div class="faculty-stats-card faculty-stats-centered">
+      <div class="faculty-stats-icon bg-success"><i class="fas fa-users"></i></div>
+      <div class="faculty-stats-content">
+        <div class="faculty-stats-value">{{ student_count }}</div>
+        <div class="faculty-stats-label" data-i18n="Total Students">Total Students</div>
+      </div>
+    </div>
+    <div class="faculty-stats-card faculty-stats-centered">
+      <div class="faculty-stats-icon bg-secondary"><i class="fas fa-tasks"></i></div>
+      <div class="faculty-stats-content">
+        <a href="{{ url_for('manage_attendance') }}" class="faculty-link faculty-stats-value" data-i18n="Open">Open</a>
+        <div class="faculty-stats-label" data-i18n="Mark Attendance">Mark Attendance</div>
+      </div>
+    </div>
+    <div class="faculty-stats-card faculty-stats-centered">
+      <div class="faculty-stats-icon bg-accent"><i class="fas fa-star"></i></div>
+      <div class="faculty-stats-content">
+        <a href="{{ url_for('manage_grades') }}" class="faculty-link faculty-stats-value" data-i18n="Open">Open</a>
+        <div class="faculty-stats-label" data-i18n="Manage Grades">Manage Grades</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="faculty-quick-actions mb-4">
+    <h3 class="faculty-section-title">Quick Actions</h3>
+    <div class="faculty-actions-list">
+      <a href="{{ url_for('manage_grades') }}" class="faculty-action-btn btn-primary"><i class="fas fa-chart-bar"></i> <span data-i18n="Manage Grades">Manage Grades</span></a>
+      <a href="{{ url_for('manage_attendance') }}" class="faculty-action-btn btn-secondary"><i class="fas fa-clipboard-list"></i> <span data-i18n="Mark Attendance">Mark Attendance</span></a>
+      <a href="{{ url_for('sessional_marks') }}" class="faculty-action-btn btn-accent"><i class="fas fa-chart-bar"></i> Sessional Marks</a>
+      <a href="{{ url_for('pre_test_marks') }}" class="faculty-action-btn btn-purple"><i class="fas fa-microscope"></i> Pre-Test Marks</a>
+      <a href="{{ url_for('manage_exams') }}" class="faculty-action-btn btn-success"><i class="fas fa-file-alt"></i> Manage Exams</a>
+    </div>
+  </div>
+
+  <!-- My Courses -->
+  <div class="card faculty-courses-card">
+    <div class="faculty-courses-header">
+      <h3>📚 My Courses</h3>
+      <span class="faculty-courses-count">{{ courses|length }} courses assigned</span>
+    </div>
     {% if courses %}
-    <div class="list-group">
-        {% for course in courses %}
-        <a href="{{ url_for('manage_grades', course_id=course['id']) }}" class="list-group-item list-group-item-action">
-            <h6 class="mb-1">{{ course['course_code'] }} - {{ course['course_name'] }}</h5>
-            <small>Semester {{ course['semester'] }} | Credits: {{ course['credits'] }}</small>
-        </a>
-        {% endfor %}
+    <div class="activity-table-wrapper">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>Course Code</th>
+            <th>Course Name</th>
+            <th>Semester</th>
+            <th>Section</th>
+            <th>Credits</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for course in courses %}
+          <tr>
+            <td><strong>{{ course['course_code'] }}</strong></td>
+            <td>{{ course['course_name'] }}</td>
+            <td><span class="badge badge-primary">Sem {{ course['semester'] }}</span></td>
+            <td><span class="badge badge-secondary">{{ course['section'] or 'N/A' }}</span></td>
+            <td>{{ course['credits'] }}</td>
+            <td>
+              <div class="faculty-course-actions">
+                <a href="{{ url_for('manage_grades', course_id=course['id']) }}" class="btn-icon" title="Manage Grades"><i class="fas fa-chart-bar"></i></a>
+                <a href="{{ url_for('manage_attendance', course_id=course['id']) }}" class="btn-icon" title="Attendance"><i class="fas fa-clipboard-list"></i></a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
     {% else %}
-    <p class="text-muted">No courses assigned yet.</p>
+    <p class="faculty-no-courses">
+      <i class="fas fa-inbox"></i>
+      No courses assigned yet. Contact the administrator to assign a course to you.
+    </p>
     {% endif %}
+  </div>
 </div>
 {% endblock %}

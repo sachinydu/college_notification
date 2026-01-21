@@ -3,42 +3,483 @@
 {% block title %}Student Grades - ERP{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>My Grades</h2>
-    
+<div class="student-grades-wrapper">
+    <!-- Header -->
+    <div class="grades-header">
+        <h1 class="grades-title">📊 My Academic Grades</h1>
+        <p class="grades-subtitle">Track your performance across all courses</p>
+    </div>
+
     {% if grades %}
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Course Code</th>
-                    <th>Course Name</th>
-                    <th>Marks</th>
-                    <th>Total</th>
-                    <th>Percentage</th>
-                    <th>Grade</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for grade in grades %}
-                <tr>
-                    <td><strong>{{ grade['course_code'] }}</strong></td>
-                    <td>{{ grade['course_name'] }}</td>
-                    <td>{{ grade['marks_obtained'] }}</td>
-                    <td>{{ grade['total_marks'] }}</td>
-                    <td>{{ (((grade['marks_obtained'] / grade['total_marks']) * 100)|round(1)) }}%</td>
-                    <td>
-                        <span class="badge {% if grade['grade'] == 'A+' or grade['grade'] == 'A' %}bg-success{% elif grade['grade'] == 'B' %}bg-info{% elif grade['grade'] == 'C' %}bg-warning{% elif grade['grade'] == 'D' %}bg-warning{% else %}bg-danger{% endif %}">
-                            {{ grade['grade'] }}
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- Overall Performance -->
+    <div class="performance-summary">
+        <div class="performance-card">
+            <div class="perf-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="perf-info">
+                <span class="perf-label">Overall Performance</span>
+                <span class="perf-value">
+                    {% set total_obtained = grades|map(attribute='marks_obtained')|sum %}
+                    {% set total_marks = grades|map(attribute='total_marks')|sum %}
+                    {{ (((total_obtained / total_marks) * 100)|round(1)) }}%
+                </span>
+            </div>
+        </div>
+        <div class="performance-card">
+            <div class="perf-icon" style="background: linear-gradient(135deg, #10b981, #06b6d4);">
+                <i class="fas fa-book"></i>
+            </div>
+            <div class="perf-info">
+                <span class="perf-label">Courses</span>
+                <span class="perf-value">{{ grades|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grades Table -->
+    <div class="grades-container">
+        <div class="table-header">
+            <h2>Course Grades</h2>
+        </div>
+
+        <div class="grades-grid">
+            {% for grade in grades %}
+            <div class="grade-card">
+                <div class="grade-card-header">
+                    <span class="course-code">{{ grade['course_code'] }}</span>
+                    <span class="grade-badge" style="background: {% if grade['grade'] == 'A+' or grade['grade'] == 'A' %}linear-gradient(135deg, #10b981, #059669){% elif grade['grade'] == 'B' %}linear-gradient(135deg, #6366f1, #4f46e5){% elif grade['grade'] == 'C' %}linear-gradient(135deg, #f59e0b, #d97706){% elif grade['grade'] == 'D' %}linear-gradient(135deg, #f97316, #ea580c){% else %}linear-gradient(135deg, #ef4444, #dc2626){% endif %}; color: white;">
+                        {{ grade['grade'] }}
+                    </span>
+                </div>
+
+                <h3 class="course-name">{{ grade['course_name'] }}</h3>
+
+                <div class="marks-display">
+                    <div class="marks-item">
+                        <span class="marks-label">Marks Obtained</span>
+                        <span class="marks-value">{{ grade['marks_obtained'] }}</span>
+                    </div>
+                    <div class="marks-divider">/</div>
+                    <div class="marks-item">
+                        <span class="marks-label">Total Marks</span>
+                        <span class="marks-value">{{ grade['total_marks'] }}</span>
+                    </div>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ (((grade['marks_obtained'] / grade['total_marks']) * 100)|round(1)) }}%; background: {% if grade['grade'] == 'A+' or grade['grade'] == 'A' %}linear-gradient(90deg, #10b981, #059669){% elif grade['grade'] == 'B' %}linear-gradient(90deg, #6366f1, #4f46e5){% elif grade['grade'] == 'C' %}linear-gradient(90deg, #f59e0b, #d97706){% elif grade['grade'] == 'D' %}linear-gradient(90deg, #f97316, #ea580c){% else %}linear-gradient(90deg, #ef4444, #dc2626){% endif %};"></div>
+                </div>
+
+                <div class="percentage-text">
+                    {{ (((grade['marks_obtained'] / grade['total_marks']) * 100)|round(1)) }}%
+                </div>
+
+                <div class="grade-interpretation">
+                    {% if grade['grade'] == 'A+' or grade['grade'] == 'A' %}
+                    <span class="interpretation excellent">Excellent Performance!</span>
+                    {% elif grade['grade'] == 'B' %}
+                    <span class="interpretation good">Good Performance</span>
+                    {% elif grade['grade'] == 'C' %}
+                    <span class="interpretation average">Average Performance</span>
+                    {% elif grade['grade'] == 'D' %}
+                    <span class="interpretation needsimprovement">Needs Improvement</span>
+                    {% else %}
+                    <span class="interpretation fail">Failed - Retake Required</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Grade Legend -->
+    <div class="grade-legend">
+        <h3>Grade Scale</h3>
+        <div class="legend-items">
+            <div class="legend-item">
+                <span class="legend-badge" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">A+</span>
+                <span>90-100% - Excellent</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-badge" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">A</span>
+                <span>80-89% - Very Good</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-badge" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white;">B</span>
+                <span>70-79% - Good</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-badge" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">C</span>
+                <span>60-69% - Satisfactory</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-badge" style="background: linear-gradient(135deg, #f97316, #ea580c); color: white;">D</span>
+                <span>50-59% - Pass</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-badge" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">F</span>
+                <span>Below 50% - Fail</span>
+            </div>
+        </div>
     </div>
     {% else %}
-    <div class="alert alert-info">No grades published yet.</div>
+    <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h2>No Grades Published Yet</h2>
+        <p>Your grades will appear here as soon as they are published by your instructors.</p>
+    </div>
     {% endif %}
 </div>
+
+<style>
+    .student-grades-wrapper {
+        padding: 2rem 0;
+    }
+
+    .grades-header {
+        margin-bottom: 3rem;
+    }
+
+    .grades-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--text-main);
+        margin: 0;
+        background: linear-gradient(135deg, #6366f1, #ec4899);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .grades-subtitle {
+        color: var(--text-muted);
+        margin: 0.5rem 0 0 0;
+        font-size: 1.05rem;
+    }
+
+    /* Performance Summary */
+    .performance-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .performance-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .performance-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(99, 102, 241, 0.15);
+    }
+
+    .perf-icon {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .perf-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .perf-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .perf-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--text-main);
+        margin-top: 0.25rem;
+    }
+
+    /* Grades Container */
+    .grades-container {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        margin-bottom: 3rem;
+    }
+
+    .table-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--border);
+    }
+
+    .table-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-main);
+    }
+
+    /* Grade Cards Grid */
+    .grades-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .grade-card {
+        background: linear-gradient(135deg, #f9fafb, #ffffff);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 1.75rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .grade-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 16px 32px rgba(99, 102, 241, 0.15);
+        border-color: var(--primary);
+    }
+
+    .grade-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .course-code {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    .grade-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .course-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+        margin-bottom: 1.5rem;
+    }
+
+    .marks-display {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+    }
+
+    .marks-item {
+        flex: 1;
+        text-align: center;
+    }
+
+    .marks-label {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .marks-value {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--text-main);
+    }
+
+    .marks-divider {
+        color: var(--text-muted);
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    /* Progress Bar */
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 0.75rem;
+    }
+
+    .progress-fill {
+        height: 100%;
+        transition: width 0.5s ease;
+    }
+
+    .percentage-text {
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 1rem;
+    }
+
+    /* Grade Interpretation */
+    .grade-interpretation {
+        text-align: center;
+    }
+
+    .interpretation {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+
+    .interpretation.excellent {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+        color: var(--success);
+    }
+
+    .interpretation.good {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.1));
+        color: var(--primary);
+    }
+
+    .interpretation.average {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+        color: var(--warning);
+    }
+
+    .interpretation.needsimprovement {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(249, 115, 22, 0.1));
+        color: #f97316;
+    }
+
+    .interpretation.fail {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+        color: var(--danger);
+    }
+
+    /* Grade Legend */
+    .grade-legend {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .grade-legend h3 {
+        margin: 0 0 1.5rem 0;
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--text-main);
+    }
+
+    .legend-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .legend-item {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .legend-badge {
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        min-width: 45px;
+        text-align: center;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05));
+        border: 2px dashed var(--border);
+        border-radius: var(--radius);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--primary);
+        opacity: 0.5;
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h2 {
+        color: var(--text-main);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .grades-title {
+            font-size: 2rem;
+        }
+
+        .performance-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .grades-container {
+            padding: 1.5rem;
+        }
+
+        .grades-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .marks-display {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .legend-items {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 {% endblock %}

@@ -4,8 +4,8 @@
 <!-- Hero Section -->
 <div class="hero-section">
     <div class="hero-content">
-        <h1>Welcome back, {{ session.user }}!</h1>
-        <p>Stay updated with the latest college happenings and upcoming events.</p>
+        <h1><span data-i18n="Welcome">Welcome back</span>, {{ session.user }}!</h1>
+        <p data-i18n="Stay updated with the latest college happenings and upcoming events.">Stay updated with the latest college happenings and upcoming events.</p>
     </div>
 </div>
 
@@ -13,8 +13,8 @@
     <!-- Latest Notices -->
     <section>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">Latest Notices</h2>
-            <a href="{{ url_for('notifications') }}"
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);" data-i18n="Latest Notices">Latest Notices</h2>
+            <a href="{{ url_for('notifications') }}" data-i18n="View All">View All</a>
                 style="color: var(--primary); text-decoration: none; font-weight: 500;">View All</a>
         </div>
 
@@ -41,7 +41,7 @@
         </div>
         {% else %}
         <div class="card text-center" style="padding: 3rem;">
-            <p style="color: var(--text-muted);">No new notices.</p>
+            <p style="color: var(--text-muted);" data-i18n="No new notices.">No new notices.</p>
         </div>
         {% endif %}
     </section>
@@ -49,8 +49,8 @@
     <!-- Upcoming Events -->
     <section>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">Upcoming Events</h2>
-            <a href="{{ url_for('events') }}"
+            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);" data-i18n="Upcoming Events">Upcoming Events</h2>
+            <a href="{{ url_for('events') }}" data-i18n="View All">View All</a>
                 style="color: var(--primary); text-decoration: none; font-weight: 500;">View All</a>
         </div>
 
@@ -73,7 +73,7 @@
         </div>
         {% else %}
         <div class="card text-center" style="padding: 3rem;">
-            <p style="color: var(--text-muted);">No upcoming events.</p>
+            <p style="color: var(--text-muted);" data-i18n="No upcoming events.">No upcoming events.</p>
         </div>
         {% endif %}
     </section>
