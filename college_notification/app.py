@@ -230,25 +230,21 @@ def delete_notice(id):
 
 # -------- NEW ROUTES --------
 @app.route('/register', methods=['GET', 'POST'])
-@login_required(role='admin')
 def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        email = request.form.get('email', '')
-        role = request.form.get('role', 'student')
-        allowed_roles = ['student', 'faculty']
-        if role not in allowed_roles:
-            flash('Only student or faculty accounts can be created.')
-            return render_template('register.html')
+        role = 'student'
+        
         db = get_db()
         try:
-            db.execute("INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)", (username, password, email, role))
+            db.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", (username, password, role))
             db.commit()
-            flash("User created successfully! Please Login.")
-            return redirect(url_for('manage_users'))
+            flash("Registration Successful! Please Login.")
+            return redirect(url_for('login'))
         except sqlite3.IntegrityError:
             flash("Username already exists!")
+            
     return render_template('register.html')
 
 @app.route('/profile', methods=['GET', 'POST'])
