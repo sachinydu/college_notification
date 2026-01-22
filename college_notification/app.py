@@ -85,12 +85,12 @@ def login_required(role=None):
                     if session.get('role') not in role:
                         print(f"[ERROR] Unauthorized: {session.get('user')} has role '{session.get('role')}' but needs {role}")
                         flash(f"You need to be {role} to access this page!")
-                        return "Unauthorized Access", 403
+                        return redirect(url_for('login'))
                 else:
                     if session.get('role') != role:
                         print(f"[ERROR] Unauthorized: {session.get('user')} has role '{session.get('role')}' but needs '{role}'")
                         flash(f"You need to be {role} to access this page!")
-                        return "Unauthorized Access", 403
+                        return redirect(url_for('login'))
             return f(*args, **kwargs)
         return decorated_function
     return decorator
