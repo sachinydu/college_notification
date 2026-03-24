@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Students - Faculty Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+            --warning-color: #ea580c;
+        }
+
+        body {
+            background: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px 0;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .header-subtitle {
+            font-size: 16px;
+            opacity: 0.95;
+            margin-top: 8px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .controls-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px 12px 40px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .students-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-stats {
+                width: 100%;
+                justify-content: space-around;
+            }
+        }
+
+        .student-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .student-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            border-left-color: var(--secondary-color);
+        }
+
+        .student-photo-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .student-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            font-size: 48px;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+        }
+
+        .student-info {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .student-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .student-roll {
+            font-size: 12px;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .student-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .detail-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .detail-item i {
+            color: var(--primary-color);
+            width: 18px;
+            text-align: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #4b5563;
+            min-width: 70px;
+        }
+
+        .detail-value {
+            word-break: break-word;
+            color: #1f2937;
+        }
+
+        .student-meta {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .badge-semester {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-section {
+            background: linear-gradient(135deg, var(--success-color) 0%, #10b981 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 10px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: #d1d5db;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            color: #4b5563;
+            margin-bottom: 10px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 10px;
+            color: #6b7280;
+        }
+
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .badge-new {
+            background: var(--warning-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+
+        .sort-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .sort-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-custom">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1><i class="fas fa-users"></i> My Students</h1>
+                    <div class="header-subtitle">
+                        Section <strong>{{ section or 'Not Assigned' }}</strong> - Viewing Students
+                    </div>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ students|length }}</div>
+                        <div class="stat-label">Total Students</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ section }}</div>
+                        <div class="stat-label">Your Section</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back Button and Search -->
+        <div class="controls-section">
+            <div class="filter-controls">
+                <a href="{{ url_for('faculty_dashboard') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <div class="search-box" style="flex: 1; min-width: 250px;">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by name or roll number..." 
+                           class="form-control" onkeyup="filterStudents()">
+                </div>
+                <button class="sort-toggle" onclick="toggleSort()">
+                    <i class="fas fa-sort"></i> Sort by Name
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        {% if not section %}
+            <!-- No Section Assigned -->
+            <div class="empty-state">
+                <i class="fas fa-info-circle"></i>
+                <h3>Section Not Assigned</h3>
+                <p>No section is assigned to your account. Please contact the administrator to assign a section.</p>
+            </div>
+        {% elif students|length > 0 %}
+            <!-- Students Grid -->
+            <div class="students-grid" id="studentsContainer">
+                {% for student in students %}
+                    <div class="student-card" data-student-name="{{ student['full_name'] }}" data-student-roll="{{ student['roll_no'] }}">
+                        <!-- Photo Section -->
+                        <div class="student-photo-section">
+                            {% if student['photo'] %}
+                                <img src="{{ url_for('static', filename=student['photo']) }}" alt="{{ student['full_name'] }}" 
+                                     class="student-photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <div class="photo-placeholder" style="display: none;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% else %}
+                                <div class="photo-placeholder">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Info Section -->
+                        <div class="student-info">
+                            <div class="student-name">{{ student['full_name'] }}</div>
+                            <div class="student-roll">
+                                <i class="fas fa-id-card"></i> {{ student['roll_no'] }}
+                            </div>
+
+                            <div class="student-details">
+                                <!-- Email -->
+                                <div class="detail-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <div>
+                                        <div class="detail-label">Email:</div>
+                                        <div class="detail-value">{{ student['email'] or 'N/A' }}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Mobile -->
+                                <div class="detail-item">
+                                    <i class="fas fa-phone"></i>
+                                    <div>
+                                        <div class="detail-label">Mobile:</div>
+                                        <div class="detail-value">{{ student['mobile'] or 'N/A' }}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Semester -->
+                                <div class="detail-item">
+                                    <i class="fas fa-book"></i>
+                                    <div>
+                                        <div class="detail-label">Semester:</div>
+                                        <div class="detail-value">{{ student['semester'] }}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Registration Date -->
+                                <div class="detail-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <div>
+                                        <div class="detail-label">Registered:</div>
+                                        <div class="detail-value">
+                                            {% if student['created_at'] %}
+                                                {{ student['created_at'][:10] }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Badges -->
+                            <div class="student-meta">
+                                <span class="badge-semester">Sem {{ student['semester'] }}</span>
+                                <span class="badge-section">{{ student['section'] }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- No search results message -->
+            <div class="no-results" id="noResults" style="display: none;">
+                <i class="fas fa-search"></i>
+                <h4>No Students Found</h4>
+                <p>Try adjusting your search criteria</p>
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <i class="fas fa-user-slash"></i>
+                <h3>No Students in Your Section</h3>
+                <p>Currently, there are no registered students in your section ({{ section }}).</p>
+                <p style="font-size: 13px; color: #999; margin-top: 10px;">
+                    Check back later or contact administration if you believe this is an error.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Back button footer for mobile -->
+    <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
+        <a href="{{ url_for('faculty_dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let students = document.querySelectorAll('.student-card');
+        let sortByName = true;
+
+        function filterStudents() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const noResults = document.getElementById('noResults');
+            let visibleCount = 0;
+
+            students.forEach(card => {
+                const name = card.dataset.studentName.toLowerCase();
+                const roll = card.dataset.studentRoll.toLowerCase();
+
+                if (name.includes(searchTerm) || roll.includes(searchTerm)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (visibleCount === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+        }
+
+        function toggleSort() {
+            const container = document.getElementById('studentsContainer');
+            const studentsArray = Array.from(container.querySelectorAll('.student-card'));
+
+            if (sortByName) {
+                studentsArray.sort((a, b) => {
+                    return a.dataset.studentName.localeCompare(b.dataset.studentName);
+                });
+            } else {
+                studentsArray.sort((a, b) => {
+                    return a.dataset.studentRoll.localeCompare(b.dataset.studentRoll);
+                });
+            }
+
+            studentsArray.forEach(card => {
+                container.appendChild(card);
+            });
+
+            sortByName = !sortByName;
+        }
+
+        // Auto-focus search on page load
+        window.addEventListener('load', () => {
+            document.getElementById('searchInput').focus();
+        });
+
+        // Clear search on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('searchInput').value = '';
+                filterStudents();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h1 style="margin-bottom: 0.25rem;">Add Faculty Member</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Create a new faculty account with login credentials</p>
+
+    <div class="card">
+        <form method="POST" action="{{ url_for('add_faculty') }}">
+            <!-- Username -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="username" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                    Username <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" id="username" name="username" class="form-control" required 
+                       placeholder="Enter faculty username" value="{{ request.form.get('username', '') }}">
+                <small style="color: var(--text-muted);">Username for login (must be unique)</small>
+            </div>
+
+            <!-- Full Name -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="full_name" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                    Full Name <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" id="full_name" name="full_name" class="form-control" required 
+                       placeholder="Enter full name" value="{{ request.form.get('full_name', '') }}">
+            </div>
+
+            <!-- Email -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="email" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                    Email <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="email" id="email" name="email" class="form-control" required 
+                       placeholder="Enter email address" value="{{ request.form.get('email', '') }}">
+            </div>
+
+            <!-- Section -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="section" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                    Assigned Section <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" id="section" name="section" class="form-control" required 
+                       placeholder="e.g., CSE-A, ECE-B, ME-C" value="{{ request.form.get('section', '') }}">
+                <small style="color: var(--text-muted);">Section where this faculty will teach</small>
+            </div>
+
+            <!-- Phone Number -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="mobile" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                    Mobile Number
+                </label>
+                <input type="tel" id="mobile" name="mobile" class="form-control" 
+                       placeholder="Enter 10-digit mobile number" value="{{ request.form.get('mobile', '') }}">
+            </div>
+
+            <!-- Password -->
+            <div style="margin-bottom: 2rem;">
+                <label for="password" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                    Password <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="password" id="password" name="password" class="form-control" required 
+                       placeholder="Enter password (min 6 characters)">
+                <small style="color: var(--text-muted);">Password must be at least 6 characters long</small>
+            </div>
+
+            <!-- Form Actions -->
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{{ url_for('manage_faculty') }}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary">Add Faculty</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Security Info -->
+    <div class="card" style="margin-top: 2rem; background: rgba(79, 70, 229, 0.05); border-left: 4px solid var(--primary);">
+        <h4 style="margin-top: 0;">🔐 Security Information</h4>
+        <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+            <li>Faculty members will use their username and password to login</li>
+            <li>All faculty are assigned to a specific section where they teach</li>
+            <li>Faculty can only see and manage students in their assigned section</li>
+            <li>Strong passwords (min 6 chars) are enforced system-wide</li>
+        </ul>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        background: var(--bg-secondary);
+        color: var(--text);
+        font-family: inherit;
+        transition: border-color 0.3s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #4f46e5;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+    
+    .btn-outline:hover {
+        background: var(--bg-secondary);
+    }
+</style>
+{% endblock %}

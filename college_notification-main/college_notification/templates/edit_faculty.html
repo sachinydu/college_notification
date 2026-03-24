@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h1 style="margin-bottom: 0.25rem;">Edit Faculty Member</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Update faculty profile information</p>
+
+    <div class="card">
+        <form method="POST" action="{{ url_for('edit_faculty', id=faculty['id']) }}">
+            <!-- Username (Read-only) -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="username" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                    Username <span style="color: var(--text-muted);">(Cannot be changed)</span>
+                </label>
+                <input type="text" id="username" class="form-control" disabled 
+                       value="{{ faculty['username'] }}">
+            </div>
+
+            <!-- Full Name -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="full_name" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                    Full Name <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" id="full_name" name="full_name" class="form-control" required 
+                       value="{{ faculty['full_name'] or '' }}">
+            </div>
+
+            <!-- Email -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="email" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                    Email <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="email" id="email" name="email" class="form-control" required 
+                       value="{{ faculty['email'] or '' }}">
+            </div>
+
+            <!-- Section -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="section" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                    Assigned Section <span style="color: #ef4444;">*</span>
+                </label>
+                <input type="text" id="section" name="section" class="form-control" required 
+                       value="{{ faculty['section'] or '' }}">
+                <small style="color: var(--text-muted);">Section where this faculty teaches</small>
+            </div>
+
+            <!-- Phone Number -->
+            <div style="margin-bottom: 2rem;">
+                <label for="mobile" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                    Mobile Number
+                </label>
+                <input type="tel" id="mobile" name="mobile" class="form-control" 
+                       value="{{ faculty['mobile'] or '' }}" placeholder="Enter mobile number">
+            </div>
+
+            <!-- Form Actions -->
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{{ url_for('manage_faculty') }}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+
+        <!-- Danger Zone -->
+        <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+        
+        <div style="background: rgba(239, 68, 68, 0.05); padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #ef4444;">
+            <h4 style="margin-top: 0; color: #ef4444;">⚠️ Danger Zone</h4>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">
+                Once deleted, all associated records will be removed. This cannot be undone.
+            </p>
+            <form method="POST" action="{{ url_for('delete_faculty', id=faculty['id']) }}" 
+                  onsubmit="return confirm('Are you sure you want to delete this faculty? This cannot be undone.');">
+                <button type="submit" class="btn btn-danger" style="background: #ef4444; color: white;">
+                    <i class="fas fa-trash"></i> Delete Faculty Member
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        background: var(--bg-secondary);
+        color: var(--text);
+        font-family: inherit;
+        transition: border-color 0.3s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    
+    .form-control:disabled {
+        background: var(--bg-tertiary);
+        color: var(--text-muted);
+        cursor: not-allowed;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #4f46e5;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+    
+    .btn-outline:hover {
+        background: var(--bg-secondary);
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: #dc2626;
+    }
+</style>
+{% endblock %}

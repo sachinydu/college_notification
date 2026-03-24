@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+
+{% block title %}Marks Management - ERP{% endblock %}
+
+{% block content %}
+<div class="marks-page">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>📊 Marks Management</h1>
+        <a href="{{ url_for('add_marks') }}" class="btn btn-primary">+ Add Marks</a>
+    </div>
+
+    {% if marks_records %}
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="filter-row">
+            <form method="GET" class="filter-form">
+                <div class="filter-group">
+                    <label for="subject_id">Subject:</label>
+                    <select name="subject_id" id="subject_id" class="form-control" onchange="this.form.submit()">
+                        <option value="">All Subjects</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject['id'] }}" {% if subject['id'] == selected_subject %}selected{% endif %}>
+                            {{ subject['subject_code'] }} - {{ subject['subject_name'] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="exam_type">Exam Type:</label>
+                    <select name="exam_type" id="exam_type" class="form-control" onchange="this.form.submit()">
+                        <option value="">All Types</option>
+                        {% for exam_type in exam_types %}
+                        <option value="{{ exam_type }}" {% if exam_type == selected_exam_type %}selected{% endif %}>
+                            {{ exam_type }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-secondary">🔍 Filter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Marks Table -->
+    <div class="marks-table-section">
+        <div class="table-responsive">
+            <table class="marks-table">
+                <thead>
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Student Name</th>
+                        <th>Roll No</th>
+                        <th>Exam Type</th>
+                        <th>Obtained</th>
+                        <th>Max Marks</th>
+                        <th>Percentage</th>
+                        <th>Remarks</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mark in marks_records %}
+                    <tr>
+                        <td><strong>{{ mark['subject_code'] }}</strong></td>
+                        <td>{{ mark['full_name'] }}</td>
+                        <td>{{ mark['roll_no'] }}</td>
+                        <td><span class="badge badge-exam">{{ mark['exam_type'] }}</span></td>
+                        <td class="marks-col">{{ mark['obtained_marks'] }}</td>
+                        <td class="marks-col">{{ mark['max_marks'] }}</td>
+                        <td class="percentage-col">
+                            <span class="percentage-badge {% if (mark['obtained_marks']/mark['max_marks']*100) >= 75 %}high{% elif (mark['obtained_marks']/mark['max_marks']*100) >= 60 %}medium{% else %}low{% endif %}">
+                                {{ "%.2f"|format(mark['obtained_marks']/mark['max_marks']*100) }}%
+                            </span>
+                        </td>
+                        <td>{{ mark['remarks'] or '-' }}</td>
+                        <td class="actions-col">
+                            <a href="{{ url_for('edit_marks', mark_id=mark['id']) }}" class="btn-icon btn-edit" title="Edit">✎</a>
+                            <form method="POST" action="{{ url_for('delete_marks', mark_id=mark['id']) }}" style="display:inline;" onsubmit="return confirm('Delete this mark record?');">
+                                <button type="submit" class="btn-icon btn-delete" title="Delete">🗑</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-section">
+        <h3>Summary Statistics</h3>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h4>Total Records</h4>
+                <p class="summary-number">{{ marks_records|length }}</p>
+            </div>
+            <div class="summary-card">
+                <h4>Average Percentage</h4>
+                <p class="summary-number">
+                    {% set avg = marks_records|map(attribute='obtained_marks')|sum / marks_records|length / (marks_records[0]['max_marks'] if marks_records else 1) * 100 if marks_records else 0 %}
+                    {{ "%.2f"|format(avg) }}%
+                </p>
+            </div>
+            <div class="summary-card">
+                <h4>Highest Score</h4>
+                <p class="summary-number">
+                    {% set max_obtained = marks_records|map(attribute='obtained_marks')|max %}
+                    {{ max_obtained }} / {{ marks_records[0]['max_marks'] if marks_records else 100 }}
+                </p>
+            </div>
+            <div class="summary-card">
+                <h4>Lowest Score</h4>
+                <p class="summary-number">
+                    {% set min_obtained = marks_records|map(attribute='obtained_marks')|min %}
+                    {{ min_obtained }} / {{ marks_records[0]['max_marks'] if marks_records else 100 }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- No Marks -->
+    <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h2>No Marks Entered</h2>
+        <p>You haven't entered any marks yet.</p>
+        <a href="{{ url_for('add_marks') }}" class="btn btn-primary">Add Marks</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .marks-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .page-header h1 {
+        margin: 0;
+    }
+
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: white;
+        color: #667eea;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid white;
+    }
+
+    .filters-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-form {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 200px;
+    }
+
+    .filter-group label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+
+    .marks-table-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .marks-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .marks-table thead {
+        background: #f8f9fa;
+    }
+
+    .marks-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #2c3e50;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .marks-table td {
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .marks-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge-exam {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .marks-col,
+    .percentage-col {
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .percentage-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .percentage-badge.high {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .percentage-badge.medium {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .percentage-badge.low {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.2s;
+    }
+
+    .btn-edit {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .btn-edit:hover {
+        background: #c3e6cb;
+    }
+
+    .btn-delete {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .btn-delete:hover {
+        background: #f5c6cb;
+    }
+
+    .actions-col {
+        display: flex;
+        gap: 0.3rem;
+    }
+
+    /* Summary Section */
+    .summary-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .summary-section h3 {
+        margin: 0 0 1.5rem 0;
+        color: #2c3e50;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .summary-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .summary-card h4 {
+        margin: 0 0 0.5rem 0;
+        opacity: 0.9;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+    }
+
+    .summary-number {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h2 {
+        color: #2c3e50;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .empty-state p {
+        color: #7f8c8d;
+        margin: 0 0 1.5rem 0;
+    }
+
+    @media (max-width: 768px) {
+        .filter-row {
+            flex-direction: column;
+        }
+
+        .filter-group {
+            min-width: 100%;
+        }
+
+        .marks-table {
+            font-size: 0.85rem;
+        }
+
+        .marks-table th,
+        .marks-table td {
+            padding: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration - College ERP</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --danger-color: #dc2626;
+            --success-color: #16a34a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .registration-container {
+            max-width: 600px;
+            width: 100%;
+            margin: 20px;
+        }
+
+        .registration-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .registration-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .registration-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .registration-header p {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .registration-body {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .form-label span.required {
+            color: var(--danger-color);
+        }
+
+        .form-control {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .form-control.is-invalid {
+            border-color: var(--danger-color);
+        }
+
+        .form-control.is-valid {
+            border-color: var(--success-color);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 576px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-color);
+            background: #f3f4f6;
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+
+        .file-upload-area i {
+            font-size: 32px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .file-upload-area p {
+            margin: 8px 0;
+            color: #4b5563;
+            font-size: 14px;
+        }
+
+        .file-upload-area .small {
+            color: #999;
+            display: block;
+            margin-top: 8px;
+        }
+
+        #profile_photo {
+            display: none;
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-register:active {
+            transform: translateY(0);
+        }
+
+        .btn-login-link {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .btn-login-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .btn-login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .validation-feedback {
+            display: block;
+            font-size: 13px;
+            margin-top: 6px;
+            color: var(--danger-color);
+        }
+
+        .validation-success {
+            font-size: 13px;
+            margin-top: 6px;
+            color: var(--success-color);
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary-color);
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-size: 13px;
+            color: #1e40af;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: 1px solid;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+        }
+
+        .alert-danger {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: var(--danger-color);
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            border-color: #86efac;
+            color: var(--success-color);
+        }
+
+        .field-hint {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner.show {
+            display: flex;
+        }
+
+        .spinner-border {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div class="registration-container">
+        <!-- Registration Card -->
+        <div class="registration-card">
+            <!-- Header -->
+            <div class="registration-header">
+                <h1><i class="fas fa-user-plus"></i> Student Registration</h1>
+                <p>Create your account to access the college ERP system</p>
+            </div>
+
+            <!-- Body -->
+            <div class="registration-body">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }}">
+                                <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' }}"></i> {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <!-- Info Box -->
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i> All fields marked with <span class="required">*</span> are required
+                </div>
+
+                <!-- Registration Form -->
+                <form id="registrationForm" method="POST" enctype="multipart/form-data">
+                    <!-- Profile Photo Upload -->
+                    <div class="form-group">
+                        <label class="form-label">Profile Photo <span class="required">*</span></label>
+                        <div class="file-upload-wrapper">
+                            <div class="file-upload-area" id="uploadArea">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Click to upload or drag and drop</p>
+                                <span class="small">PNG, JPG, GIF (Max 5MB)</span>
+                            </div>
+                            <input type="file" id="profile_photo" name="profile_photo" accept="image/*" required>
+                            <div id="photoStatus" class="field-hint"></div>
+                        </div>
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="form-group">
+                        <label class="form-label">Full Name <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" 
+                               placeholder="Enter your full name" required>
+                        <div class="field-hint">First and last name (minimum 3 characters)</div>
+                    </div>
+
+                    <!-- Roll Number and Email (Row) -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Roll Number <span class="required">*</span></label>
+                            <input type="text" class="form-control" id="roll_no" name="roll_no" 
+                                   placeholder="e.g., CSE2023001" required>
+                            <div class="field-hint">University roll number (must be unique)</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email ID <span class="required">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="your.email@example.com" required>
+                            <div class="field-hint">Valid email format required</div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile and Semester (Row) -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Mobile Number <span class="required">*</span></label>
+                            <input type="tel" class="form-control" id="mobile" name="mobile" 
+                                   placeholder="10-digit mobile number" maxlength="10" required>
+                            <div class="field-hint">Exactly 10 digits</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Semester <span class="required">*</span></label>
+                            <select class="form-control" id="semester" name="semester" required>
+                                <option value="">Select semester</option>
+                                <option value="1">Semester 1</option>
+                                <option value="2">Semester 2</option>
+                                <option value="3">Semester 3</option>
+                                <option value="4">Semester 4</option>
+                                <option value="5">Semester 5</option>
+                                <option value="6">Semester 6</option>
+                                <option value="7">Semester 7</option>
+                                <option value="8">Semester 8</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Section -->
+                    <div class="form-group">
+                        <label class="form-label">Section <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="section" name="section" 
+                               placeholder="e.g., A, B, CSE-A, IT-B" required>
+                        <div class="field-hint">Enter your section</div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label class="form-label">Password <span class="required">*</span></label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="Minimum 6 characters" minlength="6" required>
+                        <div class="field-hint">Minimum 6 characters, use strong passwords</div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-register">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+
+                    <!-- Login Link -->
+                    <div class="btn-login-link">
+                        Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // File Upload Handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('profile_photo');
+        const photoStatus = document.getElementById('photoStatus');
+        const registrationForm = document.getElementById('registrationForm');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                updatePhotoStatus();
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', updatePhotoStatus);
+
+        function updatePhotoStatus() {
+            const file = fileInput.files[0];
+            if (file) {
+                const validExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                const maxSize = 5 * 1024 * 1024; // 5MB
+
+                if (!validExtensions.includes(fileExt)) {
+                    photoStatus.textContent = '✗ Invalid file type! Use JPG, PNG, or GIF';
+                    photoStatus.style.color = '#dc2626';
+                    fileInput.value = '';
+                } else if (file.size > maxSize) {
+                    photoStatus.textContent = '✗ File too large! Maximum 5MB';
+                    photoStatus.style.color = '#dc2626';
+                    fileInput.value = '';
+                } else {
+                    photoStatus.textContent = `✓ ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                    photoStatus.style.color = '#16a34a';
+                }
+            }
+        }
+
+        // Form Validation
+        registrationForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Validate all fields
+            const fullName = document.getElementById('full_name').value.trim();
+            const rollNo = document.getElementById('roll_no').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const mobile = document.getElementById('mobile').value.trim();
+            const semester = document.getElementById('semester').value;
+            const section = document.getElementById('section').value;
+            const password = document.getElementById('password').value;
+            const photoFile = fileInput.files[0];
+
+            // Check all fields
+            if (!fullName || !rollNo || !email || !mobile || !semester || !section || !password || !photoFile) {
+                alert('⚠️ All fields are required! Please fill in all fields before submitting.');
+                return;
+            }
+
+            // Validate full name length
+            if (fullName.length < 3) {
+                alert('Full name must be at least 3 characters long');
+                return;
+            }
+
+            // Validate email format
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailPattern.test(email)) {
+                alert('Please enter a valid email address');
+                return;
+            }
+
+            // Validate mobile
+            if (!/^\d{10}$/.test(mobile)) {
+                alert('Mobile number must be exactly 10 digits');
+                return;
+            }
+
+            // Validate password
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters long');
+                return;
+            }
+
+            // Show loading spinner
+            loadingSpinner.classList.add('show');
+
+            // Submit form
+            registrationForm.submit();
+        });
+
+        // Auto-format mobile number
+        document.getElementById('mobile').addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+
+        // Trim whitespace from text inputs
+        document.getElementById('full_name').addEventListener('blur', function() {
+            this.value = this.value.trim();
+        });
+
+        document.getElementById('roll_no').addEventListener('blur', function() {
+            this.value = this.value.trim().toUpperCase();
+        });
+
+        document.getElementById('email').addEventListener('blur', function() {
+            this.value = this.value.trim().toLowerCase();
+        });
+
+        // Live email validation
+        document.getElementById('email').addEventListener('input', function() {
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            this.classList.toggle('is-valid', emailPattern.test(this.value));
+            this.classList.toggle('is-invalid', this.value.length > 0 && !emailPattern.test(this.value));
+        });
+
+        // Live mobile validation
+        document.getElementById('mobile').addEventListener('input', function() {
+            this.classList.toggle('is-valid', /^\d{10}$/.test(this.value));
+            this.classList.toggle('is-invalid', this.value.length > 0 && !/^\d{10}$/.test(this.value));
+        });
+
+        // Live password validation
+        document.getElementById('password').addEventListener('input', function() {
+            this.classList.toggle('is-valid', this.value.length >= 6);
+            this.classList.toggle('is-invalid', this.value.length > 0 && this.value.length < 6);
+        });
+    </script>
+</body>
+</html>

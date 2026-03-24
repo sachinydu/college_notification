@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block auth_content %}
+<div class="card" style="padding: 2.5rem; max-width: 500px;">
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+          {% for category, message in messages %}
+              <div class="alert alert-{{ 'danger' if category == 'error' else category }}" role="alert" style="margin-bottom: 1.5rem;">
+                  <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' }}"></i> {{ message }}
+              </div>
+          {% endfor %}
+      {% endif %}
+  {% endwith %}
+
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <div style="background: rgba(79, 70, 229, 0.1); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+      <i class="fas fa-shield-alt" style="font-size: 2rem; color: var(--primary);"></i>
+    </div>
+    <h1 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Verify OTP</h1>
+    <p style="color: var(--text-muted);">6-digit code sent to your email</p>
+  </div>
+
+  <!-- Email Display -->
+  <div style="background: #f3f4f6; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+    <small style="color: #6b7280;">Sent to: <strong>{{ reset_email }}</strong></small>
+  </div>
+
+  <!-- Info Box -->
+  <div style="background: rgba(79, 70, 229, 0.05); border-left: 4px solid var(--primary); padding: 12px 16px; border-radius: 6px; margin-bottom: 1.5rem; font-size: 13px; color: #1e3a8a;">
+    <i class="fas fa-lock"></i> <strong>Step 2 of 3:</strong> Enter the 6-digit OTP. Valid for 5 minutes.
+  </div>
+
+  <!-- Recovery Progress -->
+  <div style="margin: 20px 0; padding: 15px; background: #f9fafb; border-radius: 8px;">
+    <div style="display: flex; gap: 12px; margin-bottom: 12px; font-size: 13px; color: #999;">
+      <div style="background: #10b981; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;"><i class="fas fa-check" style="font-size: 11px;"></i></div>
+      <div style="padding-top: 2px;">Email entered</div>
+    </div>
+    <div style="display: flex; gap: 12px; margin-bottom: 12px; font-size: 13px;">
+      <div style="background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">2</div>
+      <div style="padding-top: 2px;"><strong>Verify OTP</strong> (you are here)</div>
+    </div>
+    <div style="display: flex; gap: 12px; font-size: 13px; color: #999;">
+      <div style="background: #e5e7eb; color: #666; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">3</div>
+      <div style="padding-top: 2px;">Set new password</div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <form method="POST" action="{{ url_for('verify_otp') }}" id="verifyOtpForm">
+    <!-- OTP Input with Individual digits display -->
+    <div class="form-group">
+      <label for="otp" class="form-label">Enter 6-Digit OTP</label>
+      <div style="position: relative;">
+        <span style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--primary);">
+          <i class="fas fa-key"></i>
+        </span>
+        <input type="text" id="otp" name="otp" class="form-control" placeholder="000000" maxlength="6" 
+               pattern="\d{6}" required style="padding-left: 2.75rem; font-size: 20px; letter-spacing: 8px; text-align: center; font-weight: bold; font-family: monospace;" autofocus>
+      </div>
+      <small style="color: #6b7280; margin-top: 4px; display: block; text-align: center;">Enter the 6 digits you received</small>
+    </div>
+
+    <!-- Countdown Timer -->
+    <div style="text-align: center; margin-bottom: 20px; font-size: 12px;">
+      <i class="fas fa-hourglass-end" style="color: var(--primary);"></i> 
+      Time remaining: <strong id="timer">5:00</strong>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.875rem; font-size: 1rem;">
+      <i class="fas fa-check-circle"></i> Verify OTP
+    </button>
+  </form>
+
+  <!-- Resend OTP Link -->
+  <div style="margin-top: 20px; text-align: center; padding-top: 20px; border-top: 1px solid var(--border);">
+    <p style="color: var(--text-muted); margin-bottom: 0.5rem; font-size: 13px;">Did not receive the code?</p>
+    <a href="{{ url_for('forgot_password') }}" style="color: var(--primary); text-decoration: none; font-weight: 600; font-size: 14px;">
+      <i class="fas fa-redo"></i> Request New OTP
+    </a>
+  </div>
+
+  <!-- Back to Email -->
+  <div style="margin-top: 15px; text-align: center;">
+    <a href="{{ url_for('forgot_password') }}" style="color: #6b7280; text-decoration: none; font-size: 13px;">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+  </div>
+
+  <!-- Security Notice -->
+  <div style="margin-top: 15px; padding: 10px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; font-size: 12px; color: #92400e; text-align: center;">
+    <i class="fas fa-exclamation-triangle"></i> <strong>Never share OTP:</strong> College staff will never ask for your OTP.
+  </div>
+</div>
+
+<script>
+  // Countdown Timer (5 minutes)
+  let timeRemaining = 5 * 60; // 5 minutes in seconds
+  const timerDisplay = document.getElementById('timer');
+
+  function updateTimer() {
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    if (timeRemaining <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('verifyOtpForm').innerHTML = `
+        <div class="alert alert-danger">
+          <i class="fas fa-clock"></i> OTP has expired. Please request a new one.
+        </div>
+        <a href="{{ url_for('forgot_password') }}" class="btn btn-primary" style="width: 100%;">
+          Request New OTP
+        </a>
+      `;
+    }
+
+    if (timeRemaining <= 60) {
+      timerDisplay.style.color = '#dc2626';
+    }
+
+    timeRemaining--;
+  }
+
+  const timerInterval = setInterval(updateTimer, 1000);
+  updateTimer(); // Call immediately to display correct time
+
+  // OTP Input Validation
+  const otpInput = document.getElementById('otp');
+
+  otpInput.addEventListener('input', function() {
+    // Accept only digits
+    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+
+    // Change border color based on input
+    if (this.value.length === 6) {
+      this.style.borderColor = '#10b981';
+    } else if (this.value.length > 0) {
+      this.style.borderColor = '#2563eb';
+    }
+  });
+
+  // Form Validation
+  document.getElementById('verifyOtpForm').addEventListener('submit', function(e) {
+    const otp = otpInput.value.trim();
+
+    if (!otp) {
+      e.preventDefault();
+      alert('Please enter the 6-digit OTP!');
+      otpInput.focus();
+      return;
+    }
+
+    if (otp.length !== 6) {
+      e.preventDefault();
+      alert('OTP must be exactly 6 digits!');
+      otpInput.focus();
+      return;
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+      e.preventDefault();
+      alert('OTP must contain only digits!');
+      otpInput.focus();
+      return;
+    }
+  });
+
+  // Auto focus on load
+  window.addEventListener('load', function() {
+    otpInput.focus();
+  });
+</script>
+{% endblock %}

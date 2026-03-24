@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem; text-align: center;">
+        <i class="fas fa-microscope" style="font-size: 3rem; color: var(--primary);"></i>
+        <h2 style="margin-top: 1rem;">Add Pre-Test Marks</h2>
+        <p style="color: var(--text-muted);">Record pre-test assessment marks for students</p>
+    </div>
+
+    <form method="POST">
+        <div class="form-group">
+            <label class="form-label">Course <span style="color: var(--danger);">*</span></label>
+            <select name="course_id" class="form-control" required onchange="loadStudents(this.value)">
+                <option value="">-- Select Course --</option>
+                {% for course in courses %}
+                <option value="{{ course['id'] }}">{{ course['course_code'] }} - {{ course['course_name'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Student <span style="color: var(--danger);">*</span></label>
+            <select name="student_id" id="studentSelect" class="form-control" required>
+                <option value="">-- Select Student --</option>
+            </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Pre-Test Marks Obtained</label>
+                <input type="number" name="pre_test_marks" class="form-control" min="0" step="0.5" value="0" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Total Pre-Test Marks</label>
+                <input type="number" name="total_pre_test" class="form-control" min="1" step="0.5" value="10" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Remarks</label>
+            <textarea name="remarks" class="form-control" rows="3" placeholder="e.g., Good understanding, needs practice..."></textarea>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                <i class="fas fa-save"></i> Save Marks
+            </button>
+            <a href="{{ url_for('pre_test_marks') }}" class="btn btn-secondary" style="flex: 1;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function loadStudents(courseId) {
+        if (!courseId) return;
+        // This would typically load students via AJAX
+        // For now, you can implement this based on your needs
+    }
+</script>
+{% endblock %}

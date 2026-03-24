@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #1f2937;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+  }
+  .btn-group {
+    display: flex;
+    gap: 1rem;
+  }
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-primary {
+    background: #6366f1;
+    color: white;
+  }
+  .btn-primary:hover {
+    background: #4f46e5;
+  }
+  .btn-secondary {
+    background: #e5e7eb;
+    color: #1f2937;
+  }
+  .btn-secondary:hover {
+    background: #d1d5db;
+  }
+</style>
+
+<div style="padding: 2rem;">
+  <h1 style="max-width: 600px; margin: 0 auto 2rem; color: #1f2937;">Add New Exam</h1>
+  
+  <div class="form-container">
+    <form method="POST">
+      <div class="form-group">
+        <label for="course_id">Course *</label>
+        <select name="course_id" id="course_id" required>
+          <option value="">-- Select Course --</option>
+          {% for course in courses %}
+            <option value="{{ course['id'] }}">{{ course['course_code'] }} - {{ course['course_name'] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="exam_name">Exam Name *</label>
+        <select name="exam_name" id="exam_name" required>
+          <option value="">-- Select Exam Type --</option>
+          <option value="Sessional Test 1">Sessional Test 1</option>
+          <option value="Sessional Test 2">Sessional Test 2</option>
+          <option value="Pre University Test">Pre University Test</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="max_marks">Max Marks</label>
+        <input type="number" name="max_marks" id="max_marks" value="100" step="0.5" min="0">
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea name="description" id="description" placeholder="Optional exam description"></textarea>
+      </div>
+
+      <div class="btn-group">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Add Exam
+        </button>
+        <a href="{{ url_for('manage_grades') }}" class="btn btn-secondary">
+          <i class="fas fa-times"></i> Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

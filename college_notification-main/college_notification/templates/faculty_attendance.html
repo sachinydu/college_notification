@@ -1,0 +1,453 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Attendance - ERP{% endblock %}
+
+{% block content %}
+<div class="attendance-marking-page">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>✓ Mark Attendance</h1>
+        <div class="header-info">
+            <span class="date-display">📅 Date: <strong>{{ today }}</strong></span>
+            <a href="{{ url_for('view_attendance') }}" class="btn btn-secondary">📋 View History</a>
+        </div>
+    </div>
+
+    {% if subjects %}
+    <!-- Attendance Form -->
+    <div class="attendance-form-section">
+        <form id="attendanceForm" class="attendance-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="subject_select">Select Subject <span class="required">*</span></label>
+                    <select id="subject_select" class="form-control" required>
+                        <option value="">Choose a subject...</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject['id'] }}">{{ subject['subject_code'] }} - {{ subject['subject_name'] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="attendance_date">Attendance Date <span class="required">*</span></label>
+                    <input type="date" id="attendance_date" name="attendance_date" class="form-control" value="{{ today }}" required>
+                </div>
+            </div>
+
+            <!-- Students Attendance Table -->
+            <div class="table-responsive">
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Student Name</th>
+                            <th>Semester</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        {% for student in students %}
+                        <tr class="student-row">
+                            <td>{{ student['roll_no'] }}</td>
+                            <td>{{ student['full_name'] }}</td>
+                            <td>{{ student['semester'] }}</td>
+                            <td>
+                                <select class="attendance-status" name="status_{{ student['id'] }}" data-student-id="{{ student['id'] }}">
+                                    <option value="">--</option>
+                                    <option value="Present">✓ Present</option>
+                                    <option value="Absent">✗ Absent</option>
+                                    <option value="Leave">📋 Leave</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" class="attendance-remarks" name="remarks_{{ student['id'] }}" placeholder="Optional remarks" data-student-id="{{ student['id'] }}">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Buttons -->
+            <div class="form-buttons">
+                <button type="button" class="btn btn-primary" onclick="saveAttendance()">
+                    💾 Save Attendance
+                </button>
+                <button type="reset" class="btn btn-secondary">
+                    🔄 Clear All
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-section">
+        <div class="stat-card">
+            <h3>Total Students</h3>
+            <p class="stat-number">{{ students|length }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Marked Present</h3>
+            <p class="stat-number" id="presentCount">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Marked Absent</h3>
+            <p class="stat-number" id="absentCount">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Marked Leave</h3>
+            <p class="stat-number" id="leaveCount">0</p>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- No Subjects -->
+    <div class="empty-state">
+        <div class="empty-icon">📚</div>
+        <h2>No Subjects Added</h2>
+        <p>You need to add teaching subjects first before marking attendance.</p>
+        <a href="{{ url_for('add_subject') }}" class="btn btn-primary">Add Subjects</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Update statistics
+    function updateStats() {
+        const presentCount = document.querySelectorAll('[class="attendance-status"][value="Present"], [class="attendance-status"]:checked[value="Present"]').length;
+        const absentCount = document.querySelectorAll('[class="attendance-status"][value="Absent"], [class="attendance-status"]:checked[value="Absent"]').length;
+        const leaveCount = document.querySelectorAll('[class="attendance-status"][value="Leave"], [class="attendance-status"]:checked[value="Leave"]').length;
+
+        // Count selected values
+        let present = 0, absent = 0, leave = 0;
+        document.querySelectorAll('.attendance-status').forEach(el => {
+            if (el.value === 'Present') present++;
+            else if (el.value === 'Absent') absent++;
+            else if (el.value === 'Leave') leave++;
+        });
+
+        document.getElementById('presentCount').textContent = present;
+        document.getElementById('absentCount').textContent = absent;
+        document.getElementById('leaveCount').textContent = leave;
+    }
+
+    // Update stats on change
+    document.querySelectorAll('.attendance-status').forEach(el => {
+        el.addEventListener('change', updateStats);
+    });
+
+    // Save attendance
+    async function saveAttendance() {
+        const subjectId = document.getElementById('subject_select').value;
+        const attendanceDate = document.getElementById('attendance_date').value;
+
+        if (!subjectId) {
+            alert('Please select a subject');
+            return;
+        }
+
+        const records = [];
+        document.querySelectorAll('.student-row').forEach(row => {
+            const statusSelect = row.querySelector('.attendance-status');
+            const remarksInput = row.querySelector('.attendance-remarks');
+            const status = statusSelect.value;
+
+            if (status) {
+                records.push({
+                    student_id: parseInt(statusSelect.dataset.studentId),
+                    subject_id: parseInt(subjectId),
+                    status: status,
+                    remarks: remarksInput.value || ''
+                });
+            }
+        });
+
+        if (records.length === 0) {
+            alert('Please mark attendance for at least one student');
+            return;
+        }
+
+        try {
+            const response = await fetch('{{ url_for("save_attendance") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    attendance_date: attendanceDate,
+                    records: records
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('✅ Attendance saved successfully!');
+                document.getElementById('attendanceForm').reset();
+                updateStats();
+            } else {
+                alert('❌ Error: ' + data.message);
+            }
+        } catch (error) {
+            alert('❌ Error saving attendance: ' + error.message);
+        }
+    }
+
+    // Initialize stats on page load
+    window.addEventListener('load', updateStats);
+</script>
+
+<style>
+    .attendance-marking-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        flex: 1;
+    }
+
+    .header-info {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .date-display {
+        font-size: 0.95rem;
+    }
+
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: white;
+        color: #667eea;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn-secondary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid white;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255,255,255,0.3);
+    }
+
+    .attendance-form-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .required {
+        color: #e74c3c;
+    }
+
+    .form-control {
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+
+    .attendance-table thead {
+        background: #f8f9fa;
+    }
+
+    .attendance-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #2c3e50;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .attendance-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .attendance-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .attendance-status,
+    .attendance-remarks {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .attendance-status {
+        cursor: pointer;
+    }
+
+    .attendance-status:focus,
+    .attendance-remarks:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .form-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .form-buttons .btn {
+        flex: 1;
+        padding: 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    /* Statistics */
+    .stats-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .stat-card h3 {
+        margin: 0 0 0.5rem 0;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+    }
+
+    .stat-number {
+        margin: 0;
+        color: #667eea;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h2 {
+        color: #2c3e50;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .empty-state p {
+        color: #7f8c8d;
+        margin: 0 0 1.5rem 0;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .header-info {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .form-buttons {
+            flex-direction: column;
+        }
+
+        .attendance-table {
+            font-size: 0.85rem;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            padding: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}

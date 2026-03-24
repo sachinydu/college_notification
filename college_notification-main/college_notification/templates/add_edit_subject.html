@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}{% if mode == 'add' %}Add Subject{% else %}Edit Subject{% endif %} - ERP{% endblock %}
+
+{% block content %}
+<div class="subject-form-page">
+    <!-- Header -->
+    <div class="form-header">
+        <h1>{% if mode == 'add' %}📚 Add New Subject{% else %}✏️ Edit Subject{% endif %}</h1>
+        <a href="{{ url_for('view_subjects') }}" class="btn btn-secondary">← Back</a>
+    </div>
+
+    <!-- Form Section -->
+    <div class="form-container">
+        <form method="POST" class="subject-form">
+            <!-- Subject Code -->
+            <div class="form-group">
+                <label for="subject_code">Subject Code <span class="required">*</span></label>
+                <input type="text" 
+                       id="subject_code" 
+                       name="subject_code" 
+                       class="form-control" 
+                       placeholder="e.g., CS101"
+                       value="{% if subject %}{{ subject['subject_code'] }}{% endif %}"
+                       {% if mode == 'edit' %}readonly{% endif %}
+                       required>
+                <small>Unique code for this subject (cannot be changed after creation)</small>
+            </div>
+
+            <!-- Subject Name -->
+            <div class="form-group">
+                <label for="subject_name">Subject Name <span class="required">*</span></label>
+                <input type="text" 
+                       id="subject_name" 
+                       name="subject_name" 
+                       class="form-control" 
+                       placeholder="e.g., Data Structures"
+                       value="{% if subject %}{{ subject['subject_name'] }}{% endif %}"
+                       required>
+            </div>
+
+            <!-- Semester -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="semester">Semester <span class="required">*</span></label>
+                    <select id="semester" name="semester" class="form-control" required>
+                        <option value="">Select Semester</option>
+                        {% for sem in range(1, 9) %}
+                        <option value="{{ sem }}" {% if subject and subject['semester'] == sem %}selected{% else %}{% if not subject and sem == 1 %}selected{% endif %}{% endif %}>
+                            Semester {{ sem }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Credits -->
+                <div class="form-group">
+                    <label for="credits">Credits <span class="required">*</span></label>
+                    <input type="number" 
+                           id="credits" 
+                           name="credits" 
+                           class="form-control" 
+                           placeholder="e.g., 4"
+                           min="1"
+                           max="10"
+                           value="{% if subject %}{{ subject['credits'] }}{% else %}4{% endif %}"
+                           required>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" 
+                          name="description" 
+                          class="form-control form-textarea"
+                          placeholder="Brief description of the subject"
+                          rows="4">{% if subject %}{{ subject['description'] }}{% endif %}</textarea>
+                <small>Optional: Add details about course content, objectives, etc.</small>
+            </div>
+
+            <!-- Buttons -->
+            <div class="form-buttons">
+                <button type="submit" class="btn btn-primary">
+                    {% if mode == 'add' %}➕ Add Subject{% else %}💾 Update Subject{% endif %}
+                </button>
+                <a href="{{ url_for('view_subjects') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+        <h3>ℹ️ Important Information</h3>
+        <ul>
+            <li><strong>Subject Code:</strong> Use unique codes (e.g., CS101, MA201). This cannot be changed after creation.</li>
+            <li><strong>Subject Name:</strong> Full name of the subject as it appears in course catalogs.</li>
+            <li><strong>Credits:</strong> Number of credit hours for this subject (typically 3-4).</li>
+            <li><strong>Semester:</strong> The academic semester when this subject is taught.</li>
+            <li><strong>Description:</strong> Optional field for additional course information.</li>
+        </ul>
+    </div>
+</div>
+
+<style>
+    .subject-form-page {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .form-header h1 {
+        margin: 0;
+    }
+
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid white;
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+    }
+
+    .form-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+
+    .subject-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .required {
+        color: #e74c3c;
+    }
+
+    .form-control {
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-textarea {
+        resize: vertical;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    small {
+        color: #7f8c8d;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+    }
+
+    .form-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .form-buttons button,
+    .form-buttons a {
+        flex: 1;
+        text-align: center;
+    }
+
+    .info-box {
+        background: #f0f7ff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+    }
+
+    .info-box h3 {
+        margin: 0 0 1rem 0;
+        color: #2c3e50;
+    }
+
+    .info-box ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .info-box li {
+        margin: 0.5rem 0;
+        color: #2c3e50;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .form-buttons {
+            flex-direction: column;
+        }
+
+        .form-buttons button,
+        .form-buttons a {
+            flex: none;
+        }
+    }
+</style>
+{% endblock %}

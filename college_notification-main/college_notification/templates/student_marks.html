@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+
+{% block title %}My Marks - ERP{% endblock %}
+
+{% block content %}
+<style>
+    .student-marks-container {
+        padding: 2rem;
+        max-width: 1300px;
+        margin: 0 auto;
+    }
+
+    .marks-page-header {
+        margin-bottom: 2rem;
+    }
+
+    .marks-page-header h1 {
+        font-size: 2rem;
+        color: #1f2937;
+        margin: 0 0 0.5rem;
+    }
+
+    .student-info-bar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .subject-card {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+    .subject-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.25rem;
+        border-bottom: 3px solid #667eea;
+    }
+
+    .subject-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+    .subject-code {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .marks-grid {
+        padding: 1.5rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .exam-box {
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+        transition: all 0.3s ease;
+    }
+
+    .exam-box:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+    }
+
+    .exam-type-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .exam-type-badge.st1 {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+
+    .exam-type-badge.st2 {
+        background-color: #ddd6fe;
+        color: #4c1d95;
+    }
+
+    .exam-type-badge.put {
+        background-color: #fce7f3;
+        color: #831843;
+    }
+
+    .marks-display {
+        margin-bottom: 1rem;
+    }
+
+    .marks-number {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .marks-number .obtained {
+        color: #667eea;
+    }
+
+    .marks-number .divider {
+        color: #9ca3af;
+        margin: 0 0.25rem;
+    }
+
+    .marks-number .max {
+        color: #6b7280;
+        font-size: 1.25rem;
+    }
+
+    .percentage-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .percentage-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.375rem;
+    }
+
+    .percentage-value.high {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .percentage-value.medium {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .percentage-value.low {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .percentage-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .subject-summary {
+        background: white;
+        padding: 1rem;
+        border-top: 1px solid #e5e7eb;
+        margin-top: 1rem;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        color: #6b7280;
+        font-size: 0.95rem;
+    }
+
+    .summary-row strong {
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    .overall-section {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+
+    .overall-section h2 {
+        margin: 0 0 1.5rem;
+        font-size: 1.5rem;
+        color: #1f2937;
+    }
+
+    .performance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .performance-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    }
+
+    .performance-card.secondary {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .performance-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .performance-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .performance-label {
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+
+    .no-marks-message {
+        background: #f0f9ff;
+        border: 2px dashed #0284c7;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        text-align: center;
+        color: #0c4a6e;
+    }
+
+    .no-marks-message p {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .student-info-bar {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .marks-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .overall-section {
+            padding: 1.5rem 1rem;
+        }
+
+        .performance-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="student-marks-container">
+    <!-- Page Header -->
+    <div class="marks-page-header">
+        <h1>📊 My Marks</h1>
+    </div>
+
+    <!-- Student Info Bar -->
+    {% if courses_marks %}
+    <div class="student-info-bar">
+        <div class="info-item">
+            <span style="font-size: 1.25rem;">👤</span>
+            <div>
+                <div style="font-size: 0.85rem; opacity: 0.8;">Total Subjects</div>
+                <div style="font-size: 1.25rem; font-weight: 700;">{{ total_subjects }}</div>
+            </div>
+        </div>
+        <div class="info-item">
+            <span style="font-size: 1.25rem;">📈</span>
+            <div>
+                <div style="font-size: 0.85rem; opacity: 0.8;">Overall</div>
+                <div style="font-size: 1.25rem; font-weight: 700;">{{ "%.2f"|format(overall_percentage) }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Marks by Subject -->
+    {% for (course_id, course_code, course_name), exams in courses_marks.items() %}
+    <div class="subject-card">
+        <div class="subject-header">
+            <h3>{{ course_code }}</h3>
+            <div class="subject-code">{{ course_name }}</div>
+        </div>
+
+        <div class="marks-grid">
+            <!-- ST1 Exam -->
+            {% if exams['ST1'] %}
+                {% set mark = exams['ST1'] %}
+                {% set percentage = mark['percentage'] %}
+                <div class="exam-box">
+                    <div class="exam-type-badge st1">ST1 - Sessional Test 1</div>
+                    
+                    <div class="marks-display">
+                        <div class="marks-number">
+                            <span class="obtained">{{ mark['obtained_marks']|int }}</span>
+                            <span class="divider">/</span>
+                            <span class="max">{{ mark['max_marks']|int }}</span>
+                        </div>
+                    </div>
+
+                    <div class="percentage-display">
+                        <span class="percentage-value {% if percentage >= 75 %}high{% elif percentage >= 60 %}medium{% else %}low{% endif %}">
+                            {{ "%.1f"|format(percentage) }}%
+                        </span>
+                        <span class="percentage-label">Percentage</span>
+                    </div>
+                </div>
+            {% else %}
+                <div class="exam-box" style="opacity: 0.6; border-style: dashed;">
+                    <div class="exam-type-badge st1">ST1 - Sessional Test 1</div>
+                    <div style="color: #9ca3af; font-size: 0.95rem;">No marks recorded</div>
+                </div>
+            {% endif %}
+
+            <!-- ST2 Exam -->
+            {% if exams['ST2'] %}
+                {% set mark = exams['ST2'] %}
+                {% set percentage = mark['percentage'] %}
+                <div class="exam-box">
+                    <div class="exam-type-badge st2">ST2 - Sessional Test 2</div>
+                    
+                    <div class="marks-display">
+                        <div class="marks-number">
+                            <span class="obtained">{{ mark['obtained_marks']|int }}</span>
+                            <span class="divider">/</span>
+                            <span class="max">{{ mark['max_marks']|int }}</span>
+                        </div>
+                    </div>
+
+                    <div class="percentage-display">
+                        <span class="percentage-value {% if percentage >= 75 %}high{% elif percentage >= 60 %}medium{% else %}low{% endif %}">
+                            {{ "%.1f"|format(percentage) }}%
+                        </span>
+                        <span class="percentage-label">Percentage</span>
+                    </div>
+                </div>
+            {% else %}
+                <div class="exam-box" style="opacity: 0.6; border-style: dashed;">
+                    <div class="exam-type-badge st2">ST2 - Sessional Test 2</div>
+                    <div style="color: #9ca3af; font-size: 0.95rem;">No marks recorded</div>
+                </div>
+            {% endif %}
+
+            <!-- PUT Exam -->
+            {% if exams['PUT'] %}
+                {% set mark = exams['PUT'] %}
+                {% set percentage = mark['percentage'] %}
+                <div class="exam-box">
+                    <div class="exam-type-badge put">PUT - Pre University Test</div>
+                    
+                    <div class="marks-display">
+                        <div class="marks-number">
+                            <span class="obtained">{{ mark['obtained_marks']|int }}</span>
+                            <span class="divider">/</span>
+                            <span class="max">{{ mark['max_marks']|int }}</span>
+                        </div>
+                    </div>
+
+                    <div class="percentage-display">
+                        <span class="percentage-value {% if percentage >= 75 %}high{% elif percentage >= 60 %}medium{% else %}low{% endif %}">
+                            {{ "%.1f"|format(percentage) }}%
+                        </span>
+                        <span class="percentage-label">Percentage</span>
+                    </div>
+                </div>
+            {% else %}
+                <div class="exam-box" style="opacity: 0.6; border-style: dashed;">
+                    <div class="exam-type-badge put">PUT - Pre University Test</div>
+                    <div style="color: #9ca3af; font-size: 0.95rem;">No marks recorded</div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Subject Summary -->
+        {% set st1_mark = exams['ST1']['obtained_marks'] if exams['ST1'] else 0 %}
+        {% set st2_mark = exams['ST2']['obtained_marks'] if exams['ST2'] else 0 %}
+        {% set put_mark = exams['PUT']['obtained_marks'] if exams['PUT'] else 0 %}
+        {% set st1_max = exams['ST1']['max_marks'] if exams['ST1'] else 0 %}
+        {% set st2_max = exams['ST2']['max_marks'] if exams['ST2'] else 0 %}
+        {% set put_max = exams['PUT']['max_marks'] if exams['PUT'] else 0 %}
+        {% set total_obtained = st1_mark + st2_mark + put_mark %}
+        {% set total_max = st1_max + st2_max + put_max %}
+        {% set subject_percentage = (total_obtained / total_max * 100) if total_max > 0 else 0 %}
+
+        <div class="subject-summary">
+            <div class="summary-row">
+                <span>Total Marks Obtained</span>
+                <strong>{{ total_obtained|int }} / {{ total_max|int }}</strong>
+            </div>
+            <div class="summary-row">
+                <span>Subject Percentage</span>
+                <strong>{{ "%.2f"|format(subject_percentage) }}%</strong>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Overall Performance -->
+    {% if courses_marks %}
+    <div class="overall-section">
+        <h2>📈 Overall Performance</h2>
+        <div class="performance-grid">
+            <div class="performance-card">
+                <div class="performance-icon">📚</div>
+                <div class="performance-value">{{ total_subjects }}</div>
+                <div class="performance-label">Total Subjects</div>
+            </div>
+
+            <div class="performance-card secondary">
+                <div class="performance-icon">✅</div>
+                <div class="performance-value">{{ "%.1f"|format(overall_percentage) }}%</div>
+                <div class="performance-label">Overall Percentage</div>
+            </div>
+
+            <div class="performance-card">
+                <div class="performance-icon">📊</div>
+                <div class="performance-value">6</div>
+                <div class="performance-label">Exams/Tests Taken</div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="no-marks-message">
+        <p>❌ No marks recorded yet. Check back after exams!</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

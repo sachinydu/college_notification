@@ -1,0 +1,661 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Report - ERP{% endblock %}
+
+{% block content %}
+<div class="attendance-page">
+    <!-- Header Section -->
+    <div class="attendance-header">
+        <h1>📅 Attendance Report</h1>
+        <div class="header-buttons">
+            <button class="btn btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <a href="{{ url_for('home') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Close
+            </a>
+        </div>
+    </div>
+
+    {% if student_info and daily_attendance %}
+
+    <!-- Student Information Section -->
+    <div class="student-info-section">
+        <h3>Student Information</h3>
+        <table class="student-info-table">
+            <tr>
+                <td class="label">Student Name:</td>
+                <td><strong>{{ student_info.full_name }}</strong></td>
+                <td class="label">Roll Number:</td>
+                <td><strong>{{ student_info.roll_no }}</strong></td>
+            </tr>
+            <tr>
+                <td class="label">Section:</td>
+                <td><strong>{{ student_info.section }}</strong></td>
+                <td class="label">Semester:</td>
+                <td><strong>{{ student_info.semester }}</strong></td>
+            </tr>
+            <tr>
+                <td class="label">Registration Date:</td>
+                <td colspan="3"><strong>{{ student_info.registration_date }}</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Main Attendance Table -->
+    <div class="attendance-table-section">
+        <h3>Attendance Details</h3>
+        <div class="table-responsive">
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th class="date-header">Date (Day)</th>
+                        {% for period in periods %}
+                        <th class="period-header">{{ period }}</th>
+                        {% endfor %}
+                        <th class="total-header">Total<br/>Present</th>
+                        <th class="total-header">Total<br/>Classes</th>
+                        <th class="percentage-header">%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day_data in daily_attendance %}
+                    <tr class="data-row">
+                        <td class="date-cell">
+                            <strong>{{ day_data.date }}<br/><span class="day-name">({{ day_data.day }})</span></strong>
+                        </td>
+
+                        {% for period in periods %}
+                            {% set period_data = day_data.periods.get(period) %}
+                            <td class="period-cell">
+                                {% if period_data %}
+                                    {% if period_data.status == 'Present' %}
+                                    <span class="badge badge-present">Present<br/><small>({{ period_data.subject }})</small></span>
+                                    {% elif period_data.status == 'Leave' %}
+                                    <span class="badge badge-leave">Leave<br/><small>({{ period_data.subject }})</small></span>
+                                    {% else %}
+                                    <span class="badge badge-absent">Absent<br/><small>({{ period_data.subject }})</small></span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge badge-na">-</span>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+
+                        <td class="total-cell"><strong>{{ day_data.present }}</strong></td>
+                        <td class="total-cell"><strong>{{ day_data.total }}</strong></td>
+                        <td class="percentage-cell">
+                            <span class="percentage-badge {% if day_data.percentage >= 80 %}high{% elif day_data.percentage >= 75 %}medium{% else %}low{% endif %}">
+                                {{ "%.2f"|format(day_data.percentage) }}%
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Summary Section -->
+    <div class="summary-section">
+        <h3>Attendance Summary</h3>
+        <table class="summary-table">
+            <tr>
+                <td class="summary-label">Total Classes:</td>
+                <td class="summary-value">{{ summary.total_classes }}</td>
+                <td class="summary-label">Total Present:</td>
+                <td class="summary-value present-color">{{ summary.total_present }}</td>
+                <td class="summary-label">Total Absent:</td>
+                <td class="summary-value absent-color">{{ summary.total_absent }}</td>
+                <td class="summary-label">Total Leave:</td>
+                <td class="summary-value leave-color">{{ summary.total_leave }}</td>
+                <td class="summary-label">Overall %:</td>
+                <td class="summary-value" style="color: {% if summary.overall_percentage >= 75 %}#27ae60{% else %}#e74c3c{% endif %}">
+                    <strong>{{ "%.2f"|format(summary.overall_percentage) }}%</strong>
+                </td>
+            </tr>
+        </table>
+
+        {% if summary.overall_percentage < 75 %}
+        <div class="alert alert-warning">
+            <strong>⚠️ Low Attendance Warning:</strong> Your overall attendance is <strong>{{ "%.2f"|format(summary.overall_percentage) }}%</strong>. 
+            Please ensure you maintain at least 75% attendance to remain eligible.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Legend -->
+    <div class="legend-section">
+        <h3>Legend</h3>
+        <div class="legend-items">
+            <div class="legend-item">
+                <span class="badge badge-present">Present</span>
+                <span>Class attended</span>
+            </div>
+            <div class="legend-item">
+                <span class="badge badge-absent">Absent</span>
+                <span>Class not attended without leave</span>
+            </div>
+            <div class="legend-item">
+                <span class="badge badge-leave">Leave</span>
+                <span>Approved leave taken</span>
+            </div>
+            <div class="legend-item">
+                <span class="badge badge-na">-</span>
+                <span>No class scheduled</span>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <h2>No Attendance Records Found</h2>
+        <p>Your attendance records will appear here once they are marked by your instructors.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .attendance-page {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f5f6fa;
+        min-height: 100vh;
+    }
+
+    /* ============ HEADER ============ */
+    .attendance-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .attendance-header h1 {
+        margin: 0;
+        color: #2c3e50;
+        font-size: 1.8rem;
+    }
+
+    .header-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-print {
+        background: #3498db;
+        color: white;
+    }
+
+    .btn-print:hover {
+        background: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+        background: #7f8c8d;
+        transform: translateY(-2px);
+    }
+
+    /* ============ STUDENT INFO ============ */
+    .student-info-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .student-info-section h3 {
+        margin: 0 0 1rem 0;
+        color: #2c3e50;
+        font-size: 1.2rem;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 0.5rem;
+    }
+
+    .student-info-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+    }
+
+    .student-info-table tr {
+        border-bottom: 1px solid #ecf0f1;
+    }
+
+    .student-info-table tr:last-child {
+        border-bottom: none;
+    }
+
+    .student-info-table td {
+        padding: 0.75rem;
+    }
+
+    .student-info-table td.label {
+        color: #7f8c8d;
+        font-weight: 600;
+        width: 25%;
+    }
+
+    /* ============ ATTENDANCE TABLE ============ */
+    .attendance-table-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .attendance-table-section h3 {
+        margin: 0 0 1rem 0;
+        color: #2c3e50;
+        font-size: 1.2rem;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 0.5rem;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+    }
+
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+        background: white;
+    }
+
+    .attendance-table thead {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .attendance-table th {
+        padding: 0.8rem;
+        text-align: center;
+        font-weight: 700;
+        white-space: nowrap;
+        border: 1px solid #34495e;
+    }
+
+    .attendance-table th.date-header {
+        min-width: 120px;
+    }
+
+    .attendance-table th.period-header {
+        min-width: 110px;
+    }
+
+    .attendance-table th.total-header {
+        min-width: 90px;
+    }
+
+    .attendance-table th.percentage-header {
+        min-width: 80px;
+    }
+
+    .attendance-table tbody tr {
+        border-bottom: 1px solid #ecf0f1;
+        transition: background-color 0.2s ease;
+    }
+
+    .attendance-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .attendance-table td {
+        padding: 0.8rem;
+        text-align: center;
+        border: 1px solid #ecf0f1;
+    }
+
+    .attendance-table td.date-cell {
+        font-weight: 700;
+        color: #2c3e50;
+        text-align: left;
+    }
+
+    .day-name {
+        color: #7f8c8d;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .attendance-table td.period-cell {
+        padding: 0.6rem;
+    }
+
+    .attendance-table td.total-cell {
+        font-weight: 700;
+        color: #2c3e50;
+        background: #f8f9fa;
+    }
+
+    .attendance-table td.percentage-cell {
+        font-weight: 700;
+        background: #f8f9fa;
+    }
+
+    /* ============ BADGES ============ */
+    .badge {
+        display: inline-block;
+        padding: 0.4rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: normal;
+        line-height: 1.2;
+    }
+
+    .badge-present {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .badge-absent {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .badge-leave {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+
+    .badge-na {
+        background: #e2e3e5;
+        color: #383d41;
+        border: 1px solid #d6d8db;
+    }
+
+    .percentage-badge {
+        padding: 0.5rem 0.8rem;
+        border-radius: 4px;
+        font-weight: 700;
+    }
+
+    .percentage-badge.high {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .percentage-badge.medium {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .percentage-badge.low {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* ============ SUMMARY ============ */
+    .summary-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .summary-section h3 {
+        margin: 0 0 1rem 0;
+        color: #2c3e50;
+        font-size: 1.2rem;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 0.5rem;
+    }
+
+    .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .summary-table tr {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0;
+    }
+
+    .summary-table td {
+        padding: 0.8rem 1rem;
+        border: 1px solid #ddd;
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .summary-table td.summary-label {
+        background: #f8f9fa;
+        font-weight: 700;
+        color: #7f8c8d;
+        text-align: right;
+    }
+
+    .summary-table td.summary-value {
+        font-size: 1.1rem;
+        font-weight: body 600;
+        color: #2c3e50;
+        text-align: center;
+    }
+
+    .summary-value.present-color {
+        color: #27ae60;
+    }
+
+    .summary-value.absent-color {
+        color: #e74c3c;
+    }
+
+    .summary-value.leave-color {
+        color: #f39c12;
+    }
+
+    .alert {
+        padding: 1rem 1.5rem;
+        border-radius: 6px;
+        margin-top: 1rem;
+    }
+
+    .alert-warning {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        color: #856404;
+    }
+
+    /* ============ LEGEND ============ */
+    .legend-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .legend-section h3 {
+        margin: 0 0 1rem 0;
+        color: #2c3e50;
+        font-size: 1.2rem;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 0.5rem;
+    }
+
+    .legend-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .legend-item .badge {
+        flex-shrink: 0;
+        font-size: 0.9rem;
+        padding: 0.5rem 0.8rem;
+    }
+
+    .legend-item span:last-child {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+
+    /* ============ EMPTY STATE ============ */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 8px;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #bdc3c7;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h2 {
+        color: #7f8c8d;
+        margin: 1rem 0 0.5rem 0;
+    }
+
+    .empty-state p {
+        color: #95a5a6;
+    }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 1024px) {
+        .attendance-page {
+            padding: 15px;
+        }
+
+        .attendance-table {
+            font-size: 0.75rem;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            padding: 0.5rem;
+        }
+
+        .badge {
+            padding: 0.3rem 0.4rem;
+            font-size: 0.65rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .attendance-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .header-buttons {
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .student-info-table td {
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .attendance-table {
+            font-size: 0.65rem;
+        }
+
+        .attendance-table th,
+        .attendance-table td {
+            padding: 0.4rem 0.3rem;
+        }
+
+        .summary-table td {
+            min-width: 100px;
+            padding: 0.6rem 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .legend-items {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    /* ============ PRINT ============ */
+    @media print {
+        .attendance-page {
+            background: white;
+            padding: 0;
+        }
+
+        .header-buttons {
+            display: none;
+        }
+
+        .attendance-header,
+        .student-info-section,
+        .attendance-table-section,
+        .summary-section,
+        .legend-section {
+            box-shadow: none;
+            page-break-inside: avoid;
+            margin-bottom: 1rem;
+        }
+
+        .attendance-table thead {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .btn {
+            display: none;
+        }
+
+        body {
+            background: white;
+        }
+    }
+</style>
+{% endblock %}

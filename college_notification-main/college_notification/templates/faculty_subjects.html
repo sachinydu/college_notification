@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}My Teaching Subjects - ERP{% endblock %}
+
+{% block content %}
+<div class="subjects-page">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>📚 My Teaching Subjects</h1>
+        <a href="{{ url_for('add_subject') }}" class="btn btn-primary">+ Add New Subject</a>
+    </div>
+
+    {% if subjects %}
+    <!-- Subjects Table -->
+    <div class="subjects-section">
+        <div class="table-responsive">
+            <table class="subjects-table">
+                <thead>
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th>Semester</th>
+                        <th>Credits</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in subjects %}
+                    <tr>
+                        <td><strong>{{ subject['subject_code'] }}</strong></td>
+                        <td>{{ subject['subject_name'] }}</td>
+                        <td><span class="badge badge-info">Sem {{ subject['semester'] }}</span></td>
+                        <td>{{ subject['credits'] }} Credits</td>
+                        <td>{{ subject['description'] or '-' }}</td>
+                        <td class="actions-col">
+                            <a href="{{ url_for('edit_subject', subject_id=subject['id']) }}" class="btn-icon btn-edit" title="Edit">✎</a>
+                            <form method="POST" action="{{ url_for('delete_subject', subject_id=subject['id']) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this subject?');">
+                                <button type="submit" class="btn-icon btn-delete" title="Delete">🗑</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-section">
+        <div class="summary-card">
+            <h3>Total Subjects: {{ subjects|length }}</h3>
+            <p>Total Credits: {{ subjects|map(attribute='credits')|sum }}</p>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-icon">📚</div>
+        <h2>No Subjects Yet</h2>
+        <p>You haven't added any teaching subjects yet.</p>
+        <a href="{{ url_for('add_subject') }}" class="btn btn-primary">Add Your First Subject</a>
+    </div>
+    {% endif %}
+
+    <!-- Help Section -->
+    <div class="help-section">
+        <h3>💡 Tips for Managing Subjects</h3>
+        <ul>
+            <li><strong>Subject Code:</strong> Use unique codes like CS101, MA201, etc.</li>
+            <li><strong>Credits:</strong> Enter the credit hours for this subject (typically 3-4)</li>
+            <li><strong>Semester:</strong> Specify which semester this subject is taught</li>
+            <li><strong>Description:</strong> Add brief details about the subject content</li>
+            <li><strong>Modification:</strong> You can edit or delete subjects at any time</li>
+        </ul>
+    </div>
+</div>
+
+<style>
+    .subjects-page {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .page-header h1 {
+        margin: 0;
+    }
+
+    .btn {
+        padding: 0.6rem 1.2rem;
+        background: white;
+        color: #667eea;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .subjects-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+
+    .subjects-table thead {
+        background: #f8f9fa;
+    }
+
+    .subjects-table th {
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #2c3e50;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .subjects-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .subjects-table tr:hover {
+        background: #f8f9fa;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .badge-info {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .actions-col {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.2s;
+        background: #f0f0f0;
+    }
+
+    .btn-edit {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .btn-edit:hover {
+        background: #c3e6cb;
+    }
+
+    .btn-delete {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .btn-delete:hover {
+        background: #f5c6cb;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h2 {
+        margin: 0 0 0.5rem 0;
+        color: #2c3e50;
+    }
+
+    .empty-state p {
+        color: #7f8c8d;
+        margin: 0 0 1.5rem 0;
+    }
+
+    .summary-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .summary-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .summary-card h3 {
+        margin: 0;
+        color: #667eea;
+        font-size: 1.5rem;
+    }
+
+    .summary-card p {
+        margin: 0.5rem 0 0 0;
+        color: #7f8c8d;
+    }
+
+    .help-section {
+        background: #f0f7ff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+        margin-top: 2rem;
+    }
+
+    .help-section h3 {
+        margin: 0 0 1rem 0;
+        color: #2c3e50;
+    }
+
+    .help-section ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .help-section li {
+        margin: 0.5rem 0;
+        color: #2c3e50;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .subjects-table {
+            font-size: 0.9rem;
+        }
+
+        .subjects-table th,
+        .subjects-table td {
+            padding: 0.6rem;
+        }
+    }
+</style>
+{% endblock %}
