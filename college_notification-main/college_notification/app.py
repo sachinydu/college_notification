@@ -98,38 +98,73 @@ def home():
         upcoming_events = db.execute("SELECT * FROM events ORDER BY date ASC LIMIT 5").fetchall()
         return render_template('student_home.html', notices=recent_notices, events=upcoming_events)
 
-# -------- LOGIN --------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        identifier = request.form.get('identifier', '').strip()  # Can be roll_no or email
+        user_type = request.form.get('user_type', '').strip()  # 'employee' or 'student'
+        identifier = request.form.get('identifier', '').strip()  # Can be roll_no, email, mobile, or username
         password = request.form.get('password', '').strip()
-        
+
         # Validate inputs
-        if not identifier or not password:
-            flash("Please enter Roll Number/Email and Password!", 'error')
+        if not user_type or not identifier or not password:
+            flash("Please select user type and enter credentials!", 'error')
             return render_template('login.html')
-        
+
+        # Validate user_type
+        if user_type not in ['employee', 'student']:
+            flash("Invalid user type selected!", 'error')
+            return render_template('login.html')
+
         db = get_db()
-        # Query by roll_no OR email
+        # Query user by email OR roll number
         user = db.execute(
-            "SELECT * FROM users WHERE roll_no = ? OR email = ?",
+            "SELECT u.*, s.roll_no FROM users u "
+            "LEFT JOIN students s ON u.id = s.user_id "
+            "WHERE u.email = ? OR s.roll_no = ?",
             (identifier, identifier)
         ).fetchone()
-        
-        if user and check_password_hash(user['password'], password):
-            session.clear()  # Clear old session
-            session['user'] = user['username']
-            session['user_id'] = user['id']
-            session['role'] = user['role']
-            session.permanent = True
-            flash(f"Login Successful! Welcome {user['full_name']}!", 'success')
-            print(f"[OK] User {user['username']} ({identifier}) logged in with role: {user['role']}")
-            return redirect(url_for('home'))
+
+        print(f"[DEBUG] Login attempt - Identifier: {identifier}, User Type: {user_type}")
+        print(f"[DEBUG] User found in DB: {user is not None}")
+
+        if user:
+            print(f"[DEBUG] User details: ID={user['id']}, Username={user['username']}, Email={user['email']}, Role={user['role']}, Roll No={user['roll_no']}")
+            password_match = check_password_hash(user['password'], password)
+            print(f"[DEBUG] Password match: {password_match}")
+
+            if password_match:
+                # Check role based on user_type selection
+                allowed_roles = []
+                if user_type == 'employee':
+                    allowed_roles = ['admin', 'faculty']
+                elif user_type == 'student':
+                    allowed_roles = ['student']
+
+                print(f"[DEBUG] Allowed roles for {user_type}: {allowed_roles}")
+                print(f"[DEBUG] User role: {user['role']}")
+
+                if user['role'] not in allowed_roles:
+                    flash(f"Access denied! You selected '{user_type}' but your account role is '{user['role']}'.", 'error')
+                    print(f"[ERROR] Role mismatch: user {user['username']} has role '{user['role']}' but selected '{user_type}'")
+                    return render_template('login.html')
+
+                session.clear()  # Clear old session
+                session['user'] = user['username']
+                session['user_id'] = user['id']
+                session['role'] = user['role']
+                session.permanent = True
+                flash(f"Login Successful! Welcome {user['full_name'] or user['username']}!", 'success')
+                print(f"[OK] User {user['username']} ({identifier}) logged in with role: {user['role']} as {user_type}")
+                print(f"[OK] Session set: user_id={session['user_id']}, role={session['role']}")
+                return redirect(url_for('home'))
+            else:
+                print(f"[ERROR] Password mismatch for user {user['username']}")
         else:
-            flash("Invalid Roll Number/Email or Password!", 'error')
-            print(f"[ERROR] Login failed for identifier: {identifier}")
-    
+            print(f"[ERROR] User not found with identifier: {identifier}")
+
+        flash("Invalid credentials! Please check your username and password.", 'error')
+        print(f"[ERROR] Login failed for identifier: {identifier}")
+
     return render_template('login.html')
 
 # -------- REGISTER (STUDENT REGISTRATION) --------
@@ -590,6 +625,14 @@ def admin_dashboard():
     notice_count = db.execute("SELECT COUNT(*) FROM notices").fetchone()[0]
     event_count = db.execute("SELECT COUNT(*) FROM events").fetchone()[0]
     
+    # Get recent users (last 10)
+    recent_users = db.execute("""
+        SELECT id, username, full_name, role, created_at 
+        FROM users 
+        ORDER BY created_at DESC 
+        LIMIT 10
+    """).fetchall()
+    
     recent_notices = db.execute("SELECT * FROM notices ORDER BY id DESC LIMIT 5").fetchall()
     recent_events = db.execute("SELECT * FROM events ORDER BY date ASC LIMIT 5").fetchall()
     
@@ -599,6 +642,7 @@ def admin_dashboard():
                          course_count=course_count,
                          notice_count=notice_count,
                          event_count=event_count,
+                         recent_users=recent_users,
                          notices=recent_notices,
                          events=recent_events)
 
@@ -869,7 +913,8 @@ def delete_event(id):
 def manage_users():
     db = get_db()
     users = db.execute("""
-        SELECT id, username, email, role, created_at FROM users 
+        SELECT id, username, full_name, roll_no, email, mobile, role, semester, section, created_at 
+        FROM users 
         ORDER BY created_at DESC
     """).fetchall()
     return render_template('manage_users.html', users=users)
@@ -878,35 +923,160 @@ def manage_users():
 @login_required(role='admin')
 def add_user():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        email = request.form['email']
-        role = request.form['role']
+        # Get form data
+        full_name = request.form.get('full_name', '').strip()
+        email = request.form.get('email', '').strip()
+        roll_no = request.form.get('roll_no', '').strip()
+        password = request.form.get('password', '').strip()
+        role = request.form.get('role', '').strip()
+        section = request.form.get('section', '').strip()
+        semester = request.form.get('semester', '1')
         
+        # Validate required fields
+        if not full_name or not password or not role:
+            flash("Name, password, and role are required!", 'error')
+            return redirect(url_for('add_user'))
+        
+        # Validate role
+        if role not in ['admin', 'faculty', 'student']:
+            flash("Invalid role selected!", 'error')
+            return redirect(url_for('add_user'))
+        
+        # Validate semester for students
+        if role == 'student':
+            try:
+                semester = int(semester)
+                if semester < 1 or semester > 8:
+                    raise ValueError()
+            except ValueError:
+                flash("Semester must be between 1 and 8!", 'error')
+                return redirect(url_for('add_user'))
+        
+        # Generate username
+        if role == 'student' and roll_no:
+            username = f"student_{roll_no}"
+        else:
+            # For admin/faculty, use email prefix or name
+            if email:
+                username = email.split('@')[0]
+            else:
+                username = full_name.lower().replace(' ', '_')
+        
+        # Ensure username uniqueness
         db = get_db()
+        counter = 1
+        original_username = username
+        while db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone():
+            username = f"{original_username}{counter}"
+            counter += 1
+        
+        # Hash password
+        hashed_password = generate_password_hash(password)
+        
         try:
-            db.execute("INSERT INTO users (username, password, email, role) VALUES (?, ?, ?, ?)",
-                      (username, password, email, role))
+            # Insert user
+            db.execute("""
+                INSERT INTO users (
+                    username, password, email, full_name, roll_no, 
+                    mobile, semester, section, role, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                username, hashed_password, email or None, full_name, 
+                roll_no or None, None, semester if role == 'student' else None, 
+                section or None, role, datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            ))
+            
             db.commit()
-            flash(f"User '{username}' created successfully with password: {password}")
+            flash(f"User '{full_name}' created successfully! Username: {username}, Password: {password}", 'success')
             print(f"[OK] User {username} created with role {role}")
             return redirect(url_for('manage_users'))
-        except sqlite3.IntegrityError:
-            flash("Username already exists!")
+            
+        except sqlite3.IntegrityError as e:
+            db.rollback()
+            if 'roll_no' in str(e):
+                flash("Roll number already exists!", 'error')
+            elif 'email' in str(e):
+                flash("Email already exists!", 'error')
+            else:
+                flash("Username already exists!", 'error')
+        except Exception as e:
+            db.rollback()
+            flash(f"Error creating user: {str(e)}", 'error')
+            print(f"[ERROR] Failed to create user: {e}")
+    
     return render_template('add_user.html')
 
-@app.route('/admin/user/<int:id>/reset-password', methods=['POST'])
+@app.route('/admin/user/<int:id>/edit', methods=['GET', 'POST'])
 @login_required(role='admin')
-def reset_user_password(id):
+def edit_user(id):
     db = get_db()
-    user = db.execute("SELECT username FROM users WHERE id=?", (id,)).fetchone()
-    if user:
-        new_password = user['username'] + '123'
-        db.execute("UPDATE users SET password=? WHERE id=?", (new_password, id))
-        db.commit()
-        flash(f"Password reset to: {new_password}")
-        print(f"[INFO] Password reset for user {id}")
-    return redirect(url_for('manage_users'))
+    user = db.execute("SELECT * FROM users WHERE id = ?", (id,)).fetchone()
+    
+    if not user:
+        flash("User not found!", 'error')
+        return redirect(url_for('manage_users'))
+    
+    if request.method == 'POST':
+        # Get form data
+        full_name = request.form.get('full_name', '').strip()
+        email = request.form.get('email', '').strip()
+        roll_no = request.form.get('roll_no', '').strip()
+        role = request.form.get('role', '').strip()
+        section = request.form.get('section', '').strip()
+        semester = request.form.get('semester', '1')
+        
+        # Validate required fields
+        if not full_name or not role:
+            flash("Name and role are required!", 'error')
+            return redirect(url_for('edit_user', id=id))
+        
+        # Validate role
+        if role not in ['admin', 'faculty', 'student']:
+            flash("Invalid role selected!", 'error')
+            return redirect(url_for('edit_user', id=id))
+        
+        # Validate semester for students
+        if role == 'student':
+            try:
+                semester = int(semester)
+                if semester < 1 or semester > 8:
+                    raise ValueError()
+            except ValueError:
+                flash("Semester must be between 1 and 8!", 'error')
+                return redirect(url_for('edit_user', id=id))
+        
+        try:
+            # Update user
+            db.execute("""
+                UPDATE users SET 
+                    full_name = ?, email = ?, roll_no = ?, 
+                    semester = ?, section = ?, role = ?
+                WHERE id = ?
+            """, (
+                full_name, email or None, roll_no or None,
+                semester if role == 'student' else None, 
+                section or None, role, id
+            ))
+            
+            db.commit()
+            flash(f"User '{full_name}' updated successfully!", 'success')
+            print(f"[OK] User {id} updated")
+            return redirect(url_for('manage_users'))
+            
+        except sqlite3.IntegrityError as e:
+            db.rollback()
+            if 'roll_no' in str(e):
+                flash("Roll number already exists!", 'error')
+            elif 'email' in str(e):
+                flash("Email already exists!", 'error')
+            else:
+                flash("Error updating user!", 'error')
+        except Exception as e:
+            db.rollback()
+            flash(f"Error updating user: {str(e)}", 'error')
+            print(f"[ERROR] Failed to update user {id}: {e}")
+    
+    return render_template('edit_user.html', user=user)
 
 @app.route('/admin/user/<int:id>/delete', methods=['POST'])
 @login_required(role='admin')

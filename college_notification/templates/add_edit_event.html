@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem; text-align: center;">
+        <i class="fas fa-calendar-plus" style="font-size: 3rem; color: var(--primary);"></i>
+        <h2 style="margin-top: 1rem;">{{ action }} Event</h2>
+    </div>
+
+    <form method="POST">
+        <div class="form-group">
+            <label class="form-label">Event Title</label>
+            <input type="text" name="title" class="form-control" required value="{{ event['title'] if event else '' }}"
+                placeholder="e.g. Annual Cultural Fest">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="4" required
+                placeholder="Event details...">{{ event['description'] if event else '' }}</textarea>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Date</label>
+                <input type="date" name="date" class="form-control" required
+                    value="{{ event['date'] if event else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Location</label>
+                <input type="text" name="location" class="form-control" required
+                    value="{{ event['location'] if event else '' }}" placeholder="e.g. Auditorium">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                <i class="fas fa-save"></i> Save Event
+            </button>
+            <a href="{{ url_for('events') }}" class="btn btn-secondary" style="flex: 1;">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

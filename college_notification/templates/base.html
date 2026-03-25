@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Notifications</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+  <!-- Toolbar removed: dark mode and language controls are now only in Settings page -->
+  <div class="flash-messages">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert">
+      {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+
+  {% if session.user %}
+  <div class="app-container {% if session.role == 'student' %}layout-student{% endif %}">
+    <!-- Sidebar (Admin Only) -->
+    {% if session.role == 'admin' %}
+    <nav class="sidebar">
+      <div class="nav-brand">
+        <i class="fas fa-graduation-cap"></i> CollegeApp
+      </div>
+
+      <ul class="nav-links">
+        <li>
+          <a href="{{ url_for('home') }}" class="nav-link">
+            <i class="fas fa-home"></i> Dashboard
+          </a>
+        </li>
+        
+    <!-- Toolbar removed: dark mode and language controls are now only in Settings page -->
+        <li>
+          <a href="{{ url_for('manage_courses') }}" class="nav-link">
+            <i class="fas fa-book"></i> Courses
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('manage_enrollments') }}" class="nav-link">
+            <i class="fas fa-clipboard-list"></i> Enrollments
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('manage_attendance') }}" class="nav-link">
+            <i class="fas fa-check-square"></i> Attendance
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('manage_grades') }}" class="nav-link">
+            <i class="fas fa-star"></i> Grades
+          </a>
+        </li>
+        
+        <!-- Notification Section -->
+        <li style="margin-top: 1.5rem;">
+          <div style="padding: 0.5rem 1rem; color: #999; font-size: 0.85rem; font-weight: 600; text-transform: uppercase;">Communications</div>
+        </li>
+        <li>
+          <a href="{{ url_for('notifications') }}" class="nav-link">
+            <i class="fas fa-bell"></i> Notifications
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('events') }}" class="nav-link">
+            <i class="fas fa-calendar"></i> Events
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('search') }}" class="nav-link">
+            <i class="fas fa-search"></i> Search
+          </a>
+        </li>
+        
+        <!-- User Section -->
+        <li style="margin-top: 1.5rem;">
+          <a href="{{ url_for('profile') }}" class="nav-link">
+            <i class="fas fa-user"></i> Profile
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('settings') }}" class="nav-link">
+            <i class="fas fa-cog"></i> Settings
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('help') }}" class="nav-link">
+            <i class="fas fa-question-circle"></i> Help
+          </a>
+        </li>
+        <li style="margin-top: auto;">
+          <a href="{{ url_for('logout') }}" class="nav-link" style="color: #ef4444;">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </a>
+        </li>
+      </ul>
+    </nav>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+      {% if session.role == 'student' %}
+      <aside class="faculty-sidebar student-sidebar student-sidebar-scrollfix">
+        <div class="faculty-sidebar-brand student-sidebar-brand student-sidebar-header">
+          <i class="fas fa-graduation-cap"></i> CollegeApp
+        </div>
+        <div class="student-sidebar-menu-container">
+          <ul class="faculty-sidebar-links student-sidebar-links">
+            <li><a href="{{ url_for('student_dashboard') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'student_dashboard' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-home"></i><span class="sidebar-tooltip-text">Dashboard</span></span> Dashboard</a></li>
+            <li><a href="{{ url_for('student_grades') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'student_grades' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-chart-line"></i><span class="sidebar-tooltip-text">Grades</span></span> Grades</a></li>
+            <li><a href="{{ url_for('student_attendance') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'student_attendance' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-calendar-check"></i><span class="sidebar-tooltip-text">Attendance</span></span> Attendance</a></li>
+            <li><a href="{{ url_for('events') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'events' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-calendar-alt"></i><span class="sidebar-tooltip-text">Events</span></span> Events</a></li>
+            <li><a href="{{ url_for('notifications') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'notifications' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-bell"></i><span class="sidebar-tooltip-text">Notices</span></span> Notices</a></li>
+            <li><a href="{{ url_for('profile') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'profile' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-user"></i><span class="sidebar-tooltip-text">Profile</span></span> Profile</a></li>
+            <li><a href="{{ url_for('settings') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'settings' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-cog"></i><span class="sidebar-tooltip-text">Settings</span></span> Settings</a></li>
+            <li><a href="{{ url_for('help') }}" class="faculty-sidebar-link student-sidebar-link{% if request.endpoint == 'help' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-question-circle"></i><span class="sidebar-tooltip-text">Help</span></span> Help</a></li>
+          </ul>
+          <div class="faculty-sidebar-user student-sidebar-user">
+            <span class="user-name">{{ session.user }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger student-logout-btn">Logout</a>
+          </div>
+        </div>
+      </aside>
+      {% elif session.role == 'faculty' %}
+      <aside class="faculty-sidebar faculty-sidebar-scrollfix">
+        <div class="faculty-sidebar-brand faculty-sidebar-header">
+          <i class="fas fa-graduation-cap"></i> CollegeApp
+        </div>
+        <div class="faculty-sidebar-menu-container">
+          <ul class="faculty-sidebar-links">
+            <li><a href="{{ url_for('faculty_dashboard') }}" class="faculty-sidebar-link{% if request.endpoint == 'faculty_dashboard' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-home"></i><span class="sidebar-tooltip-text">Dashboard</span></span> Dashboard</a></li>
+            <li><a href="{{ url_for('manage_grades') }}" class="faculty-sidebar-link{% if request.endpoint == 'manage_grades' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-chart-bar"></i><span class="sidebar-tooltip-text">Grades</span></span> Grades</a></li>
+            <li><a href="{{ url_for('manage_attendance') }}" class="faculty-sidebar-link{% if request.endpoint == 'manage_attendance' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-clipboard-list"></i><span class="sidebar-tooltip-text">Attendance</span></span> Attendance</a></li>
+            <li><a href="{{ url_for('notifications') }}" class="faculty-sidebar-link{% if request.endpoint == 'notifications' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-bell"></i><span class="sidebar-tooltip-text">Notices</span></span> Notices</a></li>
+            <li><a href="{{ url_for('profile') }}" class="faculty-sidebar-link{% if request.endpoint == 'profile' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-user"></i><span class="sidebar-tooltip-text">Profile</span></span> Profile</a></li>
+            <li><a href="{{ url_for('settings') }}" class="faculty-sidebar-link{% if request.endpoint == 'settings' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-cog"></i><span class="sidebar-tooltip-text">Settings</span></span> Settings</a></li>
+            <li><a href="{{ url_for('help') }}" class="faculty-sidebar-link{% if request.endpoint == 'help' %} active{% endif %}"><span class="sidebar-icon-tooltip"><i class="fas fa-question-circle"></i><span class="sidebar-tooltip-text">Help</span></span> Help</a></li>
+          </ul>
+          <div class="faculty-sidebar-user">
+            <span class="user-name">{{ session.user }}</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger">Logout</a>
+          </div>
+        </div>
+      </aside>
+      {% else %}
+      <!-- Admin Header -->
+      <header class="dashboard-header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button id="menu-toggle" class="btn btn-secondary" style="display: none;">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h2 style="font-weight: 600; margin: 0;">Welcome, {{ session.user }}</h2>
+        </div>
+        <div class="user-badge" style="display: flex; align-items: center; gap: 0.5rem;">
+          <span
+            style="background: var(--primary); color: white; padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.875rem;">
+            {{ session.role|upper }}
+          </span>
+        </div>
+      </header>
+      {% endif %}
+
+      <div class="content-wrapper">
+        {% block content %}{% endblock %}
+      </div>
+
+      <footer class="main-footer">
+        <p data-i18n="© 2024 College Notification System. All rights reserved.">&copy; 2024 College Notification System. All rights reserved.</p>
+        <p style="font-size: 1rem; color: #888; margin-top: 0.5rem;">
+          <i class="fas fa-quote-left"></i> <span data-i18n="Success is the sum of small efforts, repeated day in and day out.">"Success is the sum of small efforts, repeated day in and day out."</span> <i class="fas fa-quote-right"></i>
+        </p>
+      </footer>
+    </main>
+  </div>
+  {% else %}
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      {% block auth_content %}{% endblock %}
+    </div>
+  </div>
+  {% endif %}
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+  <script>
+    // Simple active link highlighter
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (link.getAttribute('href') === currentPath) {
+        link.classList.add('active');
+      }
+    });
+
+    // Mobile menu button visibility
+    if (window.innerWidth <= 768) {
+      document.getElementById('menu-toggle').style.display = 'inline-flex';
+    }
+    window.addEventListener('resize', () => {
+      document.getElementById('menu-toggle').style.display = window.innerWidth <= 768 ? 'inline-flex' : 'none';
+    });
+
+    // DARK MODE FUNCTIONALITY
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    function setDarkMode(on) {
+      if(on) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('darkmode','1');
+      } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('darkmode','0');
+      }
+    }
+    // On load
+    if(localStorage.getItem('darkmode')==='1') {
+      darkModeToggle.checked = true;
+      setDarkMode(true);
+    }
+    darkModeToggle.addEventListener('change',e=>setDarkMode(e.target.checked));
+
+    // LANGUAGE FUNCTIONALITY
+    const langSwitcher = document.getElementById('langSwitcher');
+    const translations = {
+      hi: {
+        'Dashboard':'डैशबोर्ड','Grades':'अंक','Attendance':'उपस्थिति','Events':'इवेंट्स','Notices':'सूचनाएँ','Profile':'प्रोफ़ाइल','Settings':'सेटिंग्स','Help':'सहायता','Logout':'लॉगआउट','Users':'यूज़र','Students':'छात्र','Courses':'कोर्स','Enrollments':'नामांकन','Notifications':'सूचनाएँ','Search':'खोज','Welcome':'स्वागत','Dark Mode':'डार्क मोड','English':'अंग्रेज़ी','Hindi':'हिन्दी','Spanish':'स्पेनिश','Success is the sum of small efforts, repeated day in and day out.':'सफलता छोटे प्रयासों का योग है, जो हर दिन दोहराए जाते हैं।'
+      },
+      es: {
+        'Dashboard':'Tablero','Grades':'Calificaciones','Attendance':'Asistencia','Events':'Eventos','Notices':'Avisos','Profile':'Perfil','Settings':'Configuración','Help':'Ayuda','Logout':'Cerrar sesión','Users':'Usuarios','Students':'Estudiantes','Courses':'Cursos','Enrollments':'Inscripciones','Notifications':'Notificaciones','Search':'Buscar','Welcome':'Bienvenido','Dark Mode':'Modo Oscuro','English':'Inglés','Hindi':'Hindi','Spanish':'Español','Success is the sum of small efforts, repeated day in and day out.':'El éxito es la suma de pequeños esfuerzos, repetidos día tras día.'
+      }
+    };
+    function translateUI(lang) {
+      document.querySelectorAll('[data-i18n]').forEach(el=>{
+        const key = el.getAttribute('data-i18n');
+        if(lang==='en') el.textContent = key;
+        else if(translations[lang] && translations[lang][key]) el.textContent = translations[lang][key];
+      });
+      // Also update <option> text for language switcher
+      if(lang==='hi') {
+        langSwitcher.options[0].text = 'अंग्रेज़ी';
+        langSwitcher.options[1].text = 'हिन्दी';
+        langSwitcher.options[2].text = 'स्पेनिश';
+      } else if(lang==='es') {
+        langSwitcher.options[0].text = 'Inglés';
+        langSwitcher.options[1].text = 'Hindi';
+        langSwitcher.options[2].text = 'Español';
+      } else {
+        langSwitcher.options[0].text = 'English';
+        langSwitcher.options[1].text = 'Hindi';
+        langSwitcher.options[2].text = 'Spanish';
+      }
+    }
+    langSwitcher.addEventListener('change',e=>{
+      localStorage.setItem('lang',e.target.value);
+      translateUI(e.target.value);
+    });
+    // On load
+    const savedLang = localStorage.getItem('lang')||'en';
+    langSwitcher.value = savedLang;
+    translateUI(savedLang);
+  </script>
+</body>
+
+</html>

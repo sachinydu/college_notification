@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <h1>🧪 Pre-Test Marks Management</h1>
+  <p style="color: var(--text-muted);">Upload and manage pre-test marks for your section.</p>
+</div>
+
+<!-- Course Selection -->
+<div class="card" style="margin-bottom: 2rem;">
+  <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 300px;">
+      <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Select Course:</label>
+      <select id="courseSelect" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 1rem;">
+        <option value="">-- Choose a Course --</option>
+        {% for course in courses %}
+        <option value="{{ course['id'] }}" {% if course['id']|string == selected_course %}selected{% endif %}>
+          {{ course['course_code'] }} - {{ course['course_name'] }} (Section {{ course['section'] }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+      <a href="{{ url_for('add_pre_test_marks') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Marks
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Marks Display -->
+{% if selected_course and marks_data %}
+<div class="card">
+  <div style="margin-bottom: 1rem;">
+    <h3>📋 Pre-Test Marks - Section {{ section }}</h3>
+    <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">Pre-test Assessment Results</p>
+  </div>
+  
+  <div class="activity-table-wrapper">
+    <table class="activity-table">
+      <thead>
+        <tr>
+          <th>Roll No</th>
+          <th>Student Name</th>
+          <th>Pre-Test Marks</th>
+          <th>Total</th>
+          <th>Percentage</th>
+          <th>Remarks</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mark in marks_data %}
+        <tr>
+          <td><strong>{{ mark['roll_no'] }}</strong></td>
+          <td>{{ mark['full_name'] }}</td>
+          <td>{{ mark['pre_test_marks'] }}</td>
+          <td>{{ mark['total_pre_test'] }}</td>
+          <td>
+            {% set percentage = (mark['pre_test_marks'] / mark['total_pre_test'] * 100)|round(1) %}
+            <span style="background: {% if percentage >= 80 %}#10b981{% elif percentage >= 60 %}#f59e0b{% else %}#ef4444{% endif %}; 
+                         color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-weight: 600;">
+              {{ percentage }}%
+            </span>
+          </td>
+          <td style="font-size: 0.9rem; color: var(--text-muted);">{{ mark['remarks'][:30] if mark['remarks'] else '-' }}</td>
+          <td>
+            <div style="display: flex; gap: 0.5rem;">
+              <a href="#" class="btn-icon" title="Edit">
+                <i class="fas fa-edit"></i>
+              </a>
+              <form action="#" method="POST" style="display: inline;" onsubmit="return confirm('Delete this record?');">
+                <button type="submit" class="btn-icon danger" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% elif selected_course %}
+<div class="card" style="text-align: center; padding: 3rem;">
+  <i class="fas fa-inbox" style="font-size: 3rem; color: var(--primary); opacity: 0.5; margin-bottom: 1rem; display: block;"></i>
+  <p style="color: var(--text-muted); font-size: 1.1rem;">No pre-test marks added yet for this course.</p>
+  <a href="{{ url_for('add_pre_test_marks', course_id=selected_course) }}" class="btn btn-primary" style="margin-top: 1rem; display: inline-block;">
+    <i class="fas fa-plus"></i> Add First Record
+  </a>
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+  <i class="fas fa-book" style="font-size: 3rem; color: var(--primary); opacity: 0.5; margin-bottom: 1rem; display: block;"></i>
+  <p style="color: var(--text-muted); font-size: 1.1rem;">Select a course to view and manage pre-test marks.</p>
+</div>
+{% endif %}
+
+<script>
+  document.getElementById('courseSelect').addEventListener('change', function(e) {
+    if (e.target.value) {
+      window.location.href = `{{ url_for('pre_test_marks') }}?course_id=${e.target.value}`;
+    }
+  });
+</script>
+{% endblock %}

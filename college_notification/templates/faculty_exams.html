@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .btn-group {
+    display: flex;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+  .btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  .course-selector {
+    margin-bottom: 2rem;
+  }
+  .course-selector select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+  }
+  .exam-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .exam-info h3 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 1.125rem;
+  }
+  .exam-info p {
+    margin: 0.25rem 0 0 0;
+    color: #6b7280;
+    font-size: 0.875rem;
+  }
+  .exam-actions a {
+    padding: 0.5rem 1rem;
+    margin-left: 0.5rem;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    font-size: 0.875rem;
+    display: inline-block;
+  }
+  .btn-marks {
+    background: #6366f1;
+    color: white;
+    border: none;
+  }
+  .btn-marks:hover {
+    background: #4f46e5;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+  }
+  .empty-state p {
+    color: #6b7280;
+    margin: 0;
+  }
+  .max-marks-badge {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    margin-left: 0.5rem;
+  }
+</style>
+
+<div style="max-width: 1000px; margin: 0 auto; padding: 2rem;">
+  <h1 style="color: #1f2937; margin-bottom: 0.5rem;">Exam Management</h1>
+  <p style="color: #6b7280; margin-bottom: 2rem;">Manage exams for your courses</p>
+
+  <!-- Course Selector -->
+  {% if courses %}
+  <div class="course-selector">
+    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Select Course:</label>
+    <select onchange="location.href='{{ url_for('manage_grades') }}?course_id=' + this.value;">
+      <option value="">-- Choose a course --</option>
+      {% for course in courses %}
+        <option value="{{ course['id'] }}" {% if course['id'] == course_id %}selected{% endif %}>
+          {{ course['course_code'] }} - {{ course['course_name'] }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {% if course_id %}
+    <div style="margin-bottom: 2rem;">
+      <a href="{{ url_for('add_exam') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New Exam
+      </a>
+    </div>
+
+    {% if exams %}
+      <h2 style="color: #1f2937; font-size: 1.25rem; margin-bottom: 1.5rem;">Exams</h2>
+      {% for exam in exams %}
+        <div class="exam-card">
+          <div class="exam-info">
+            <h3>{{ exam['exam_name'] }}</h3>
+            <p>Max Marks: {{ exam['max_marks'] }} | Created: {{ exam['created_at'][:10] }}</p>
+          </div>
+          <div class="exam-actions">
+            <a href="{{ url_for('exam_marks', exam_id=exam['id']) }}" class="btn-marks">
+              <i class="fas fa-list"></i> View & Add Marks
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <p style="font-size: 1rem; margin-bottom: 1rem;">No exams added yet</p>
+        <a href="{{ url_for('add_exam') }}" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Create First Exam
+        </a>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="empty-state">
+      <p>Please select a course to view exams</p>
+    </div>
+  {% endif %}
+
+  {% else %}
+    <div class="empty-state">
+      <p>No courses assigned to you yet</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

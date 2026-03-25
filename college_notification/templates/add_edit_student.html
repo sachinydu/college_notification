@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{% if action == 'Add' %}Add Student{% else %}Edit Student{% endif %} - ERP{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if action == 'Add' %}Add New Student{% else %}Edit Student{% endif %}</h2>
+    
+    <form method="POST" class="mt-4" style="max-width: 500px;">
+        {% if action == 'Add' %}
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="roll_no" class="form-label">Roll Number</label>
+            <input type="text" class="form-control" id="roll_no" name="roll_no" required>
+        </div>
+        {% endif %}
+        
+        <div class="mb-3">
+            <label for="full_name" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="full_name" name="full_name" 
+                   value="{{ student['full_name'] if action == 'Edit' else '' }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="phone" class="form-label">Phone</label>
+            <input type="tel" class="form-control" id="phone" name="phone"
+                   value="{{ student['phone'] if action == 'Edit' else '' }}">
+        </div>
+        
+        <div class="mb-3">
+            <label for="semester" class="form-label">Semester</label>
+            <select class="form-control" id="semester" name="semester" required>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>7</option>
+                <option>8</option>
+            </select>
+        </div>
+        
+        {% if action == 'Edit' %}
+        <div class="mb-3">
+            <label for="is_active" class="form-label">Status</label>
+            <select class="form-control" id="is_active" name="is_active">
+                <option value="1" {% if student['is_active'] %}selected{% endif %}>Active</option>
+                <option value="0" {% if not student['is_active'] %}selected{% endif %}>Inactive</option>
+            </select>
+        </div>
+        {% endif %}
+        
+        <button type="submit" class="btn btn-primary">{% if action == 'Add' %}Add Student{% else %}Update Student{% endif %}</button>
+        <a href="{{ url_for('manage_students') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

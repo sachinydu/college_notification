@@ -28,13 +28,13 @@ def insert_default_users():
         
         # Check if users already exist
         cursor.execute("SELECT COUNT(*) FROM users WHERE email IN (?, ?)", 
-                      ('admin@college.edu', 'faculty1@college.edu'))
+                      ('admin@erp.com', 'faculty1@college.edu'))
         existing_count = cursor.fetchone()[0]
         
         if existing_count > 0:
             print("[INFO] Admin and/or faculty users already exist. Skipping creation.")
             cursor.execute("SELECT id, username, email, role, full_name FROM users WHERE email IN (?, ?)",
-                          ('admin@college.edu', 'faculty1@college.edu'))
+                          ('admin@erp.com', 'faculty1@college.edu'))
             for row in cursor.fetchall():
                 print(f"   - {row[2]} ({row[1]}) - Role: {row[3]}")
             return True
@@ -43,7 +43,7 @@ def insert_default_users():
         users = [
             {
                 'username': 'admin',
-                'email': 'admin@college.edu',
+                'email': 'admin@erp.com',
                 'password_plain': 'admin123',
                 'role': 'admin',
                 'full_name': 'System Administrator',
